@@ -3,8 +3,11 @@
 // Bağlı:   app/layout.tsx (her sayfada render edilir)
 // Risk:    Eksik/bozuk iletişim bilgisi → kullanıcı şubeye ulaşamaz
 // Dokunma: Şube telefon/adres bilgisi CONTENT_GUIDE.md §5 NAP verisiyle senkron tutulmalı
+//          Logo: /public/images/logo-bowlera.png — orijinal mor/pembe/turuncu degrade,
+//          site paletine (zeytin/amber/toprak kızılı) uyarlanarak recolor edildi (Session 1).
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { NAV_LINKS } from './navLinks'
 
 export function Footer() {
@@ -12,8 +15,15 @@ export function Footer() {
     <footer className="bg-espresso text-cream mt-24">
       <div className="mx-auto max-w-6xl px-4 py-12 grid gap-8 md:grid-cols-3">
         <div>
-          <p className="font-display text-2xl font-bold">Bowlera</p>
-          <p className="mt-2 text-sm text-cream/70 font-body">Healthy Bowls</p>
+          <Image
+            src="/images/logo-bowlera.png"
+            alt="Bowlera - Healthy Bowls"
+            width={64}
+            height={64}
+            className="h-16 w-16 object-contain"
+          />
+          <p className="mt-3 font-display text-2xl font-bold">Bowlera</p>
+          <p className="mt-1 text-sm text-cream/70 font-body">Healthy Bowls</p>
         </div>
         <nav className="flex flex-col gap-2 font-body text-sm">
           {NAV_LINKS.map((link) => (
