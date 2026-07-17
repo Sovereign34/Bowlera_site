@@ -1,9 +1,3 @@
-// app/menu/page.tsx
-// Amaç:    menu-data.json'ı okuyup MenuCard grid'i olarak render eder
-// Bağlı:   MenuCard.tsx, menu-data.json, types/index.ts
-// Risk:    Veri boşsa kullanıcıya boş beyaz sayfa gösterilmemeli — edge case ele alındı
-// Dokunma: CategoryNav.tsx / FilterPanel.tsx henüz bu sayfaya eklenmedi (Görev #3-4, ayrı adım)
-
 import { MenuCard } from "@/components/menu/MenuCard"
 import menuData from "@/lib/menu-data.json"
 import { BowlItem } from "@/types"
@@ -29,4 +23,4 @@ export default function MenuPage() {
       </div>
     </main>
   )
-                   }
+}
