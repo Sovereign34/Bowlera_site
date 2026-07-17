@@ -1,38 +1,40 @@
-// components/menu/MenuCardImage.tsx
-// Amaç:    Kart fotoğrafını ve (varsa) "Süper Gıda" logo-degrade rozetini render eder
-// Bağlı:   MenuCard.tsx
-// Risk:    Yanlış aspect-ratio → CLS (Core Web Vitals ihlali)
-// Dokunma: DESIGN_SYSTEM.md §2.1 — logo degrade sadece 4 izinli yerden biri burada kullanılıyor
+// components/menu/MenuCard.tsx
+// Amaç:    Menü kartını tek bir BowlItem'dan kurar — Image/Badges/Info alt bileşenlerini birleştirir
+// Bağlı:   MenuCardImage.tsx, MenuCardBadges.tsx, MenuCardInfo.tsx, menu-data.json, types/index.ts
+// Risk:    Alt bileşenlere yanlış prop mapping → sessiz veri kaybı
+// Dokunma: DESIGN_SYSTEM.md §2 (kart çerçevesi) — allergen satırı DESIGN_SYSTEM'de yoksa buradan kaldırılıp oraya taşınmalı
+// NOT:     allergens alanı önceki 3 alt bileşende hiç render edilmiyordu (Badges sadece tags, Info sadece
+//          kalori/protein/fiyat alıyor) — bu gerçek bir gap'ti. Aşağıda minimal bir satırla kapatıldı.
 
-import Image from "next/image"
+import { MenuCardImage } from "./MenuCardImage"
+import { MenuCardBadges } from "./MenuCardBadges"
+import { MenuCardInfo } from "./MenuCardInfo"
+import { BowlItem } from "@/types"
 
-const SUPER_FOOD_TAGS = ["vegan", "yüksek protein", "düşük kalori"]
+const ALLERGEN_LABELS: Record<string, string> = {
+  gluten: "Gluten",
+  dairy: "Süt",
+  nuts: "Kuruyemiş",
+  soy: "Soya",
+  shellfish: "Kabuklu Deniz Ürünü",
+}
 
-export function MenuCardImage({
-  image,
-  name,
-  tags,
-}: {
-  image: string
-  name: string
-  tags: string[]
-}) {
-  const isSuperFood = tags.some((tag) => SUPER_FOOD_TAGS.includes(tag))
-
+export function MenuCard({ item }: { item: BowlItem }) {
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-cream">
-      <Image
-        src={`/images/${image}`}
-        alt={name}
-        fill
-        className="object-cover"
-        sizes="(max-width: 768px) 50vw, 300px"
-      />
-      {isSuperFood && (
-        <span className="absolute top-2 left-2 rounded-full bg-[linear-gradient(135deg,#8A2387_0%,#E94057_50%,#F27121_100%)] px-3 py-1 text-xs font-body font-semibold text-white">
-          Süper Gıda
-        </span>
+    <article className="flex flex-col gap-2 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/5">
+      <MenuCardImage image={item.image} name={item.name} tags={item.tags} />
+      <MenuCardBadges tags={item.tags} />
+      {item.allergens && item.allergens.length > 0 && (
+        <p className="px-1 text-xs font-body text-charcoal/70">
+          İçerir: {item.allergens.map((a) => ALLERGEN_LABELS[a]).join(", ")}
+        </p>
       )}
-    </div>
+      <MenuCardInfo
+        name={item.name}
+        calories={item.calories}
+        protein={item.protein}
+        price={item.price}
+      />
+    </article>
   )
 }
