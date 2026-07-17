@@ -1,0 +1,27 @@
+/* app/globals.css
+   Amaç:    Tailwind katmanları + base reset + erişilebilirlik kuralı
+   Risk:    prefers-reduced-motion kuralı burada değil, bileşen bazlı uygulanır
+   Dokunma: DESIGN_SYSTEM.md §6.2 — global animasyon susturma burada tanımlı */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream text-charcoal font-body;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+  }
+}
+
+/* DESIGN_SYSTEM.md §6.2 Kural 1 — prefers-reduced-motion global susturma */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
