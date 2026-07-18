@@ -1,8 +1,8 @@
 // types/index.ts
-// Amaç:    BowlItem/CartItem/CustomizerSelection veri modelini tek yerden tanımlar
-// Bağlı:   menu-data.json, MenuCard, useCartStore, useCustomizerStore
-// Risk:    Tip burada bozulursa menü kartı, sepet ve customizer aynı anda kırılır
-// Dokunma: ARCHITECTURE.md §3 (Veri Modeli) — değişiklik önce orada onaylanmalı
+// Amaç:    BowlItem/CartItem/CustomizerSelection ve customizer bileşen veri modelini tek yerden tanımlar
+// Bağlı:   menu-data.json, lib/customizer-data.ts, MenuCard, useCartStore, useCustomizerStore
+// Risk:    Tip burada bozulursa menü kartı, sepet, customizer state ve fiyat hesabı aynı anda kırılır
+// Dokunma: ARCHITECTURE.md §3 (Veri Modeli) + CUSTOMIZER_SPEC.md §3.1 — değişiklik önce orada onaylanmalı
 
 export type BowlItem = {
   id: string
@@ -18,11 +18,56 @@ export type BowlItem = {
   fat?: number
 }
 
+// --- Customizer bileşen kataloğu — CUSTOMIZER_SPEC.md §2, §4 ---
+// Şema notu: docs/schema-changes/20260718060000_customizer_selection_5_adim_tip_ve_katalog_eklendi.md
+
+export type CustomizerComponentItem = {
+  id: string
+  name: string
+  price: number // ücretsiz kotaya dahilse hesaplama katmanında (lib/customizer-pricing.ts) 0 sayılır
+  calories: number // ZORUNLU (MASTER_PLAN §5.5)
+  protein: number // ZORUNLU
+  carbs?: number
+  fat?: number
+}
+
+export type CustomizerExtraOptions = {
+  extraAvocado: CustomizerComponentItem
+  extraSauce: CustomizerComponentItem
+  extraCrunch: CustomizerComponentItem
+}
+
+export type CustomizerCatalog = {
+  bases: CustomizerComponentItem[]
+  mains: CustomizerComponentItem[]
+  gardenItems: CustomizerComponentItem[]
+  signatureFlavors: CustomizerComponentItem[]
+  finishItems: CustomizerComponentItem[]
+  extraOptions: CustomizerExtraOptions
+}
+
+// --- Customizer seçim state'i — CUSTOMIZER_SPEC.md §3.1 (v1.1, 5 adım) ---
+
 export type CustomizerSelection = {
-  base: string
-  protein: string
-  toppings: string[]
-  sauce: string
+  base: string | null
+  main: string | null
+  mainPortion: "single" | "double"
+  garden: string[] // max 4 ücretsiz (avokado hariç), sonrası ücretli
+  signatureFlavor: string | null
+  finish: string[] // max 1 ücretsiz, sonrası ücretli
+  extras: {
+    extraAvocado: boolean
+    extraSauce: boolean
+    extraCrunch: boolean
+  }
+}
+
+export type CustomizerTotals = {
+  price: number
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
 }
 
 export type CartItem = {
