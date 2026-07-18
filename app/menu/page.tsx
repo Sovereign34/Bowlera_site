@@ -23,7 +23,7 @@ import {
 
 export default function MenuPage() {
   const items = menuData as BowlItem[]
-  const [activeTab, setActiveTab] = useState<CategoryTabId>('imza')
+  const [activeTab, setActiveTab] = useState<CategoryTabId>('tumu')
   const [excludedAllergens, setExcludedAllergens] = useState<string[]>([])
   const [selectedDietTags, setSelectedDietTags] = useState<string[]>([])
 
