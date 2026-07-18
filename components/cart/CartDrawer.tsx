@@ -58,7 +58,7 @@ export default function CartDrawer({ isOpen, onClose }: Props) {
                   className="flex items-center justify-between gap-2 border-b border-olive-deep/20 pb-2"
                 >
                   <div className="font-body">
-                    <p className="font-semibold text-charcoal">{item.bowlItem?.name ?? "Özel Kâse"}</p>
+                    <p className="font-semibold text-charcoal">{item.bowlItem?.name ?? "Özel Kase"}</p>
                     <p className="text-sm text-espresso">
                       {item.quantity} × {formatPrice(item.unitPrice)}
                     </p>
