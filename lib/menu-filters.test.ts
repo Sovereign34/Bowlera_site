@@ -21,7 +21,7 @@ const mockItems: BowlItem[] = [
   },
   {
     id: '3', name: 'Sıcak Tahıl Kase', category: 'build-your-own', price: 220,
-    image: 'build-your-own-sicak-tahil-kase.webp', tags: ['sıcak tahıl', 'gluten'],
+    image: 'build-your-own-sicak-tahil-kase.webp', tags: ['sıcak-tahıl', 'gluten'],
     allergens: ['gluten', 'nuts'], calories: 460, protein: 22,
   },
   {
@@ -39,7 +39,7 @@ describe('filterByCategory', () => {
     expect(filterByCategory(mockItems, 'vegan').map((i) => i.id)).toEqual(['2'])
   })
 
-  it('edge case: sicak-tahil sekmesi tags["sıcak tahıl"] üzerinden eşler', () => {
+  it('edge case: sicak-tahil sekmesi tags["sıcak-tahıl"] üzerinden eşler', () => {
     expect(filterByCategory(mockItems, 'sicak-tahil').map((i) => i.id)).toEqual(['3'])
   })
 
