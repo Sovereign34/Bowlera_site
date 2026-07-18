@@ -9,8 +9,9 @@ import userEvent from '@testing-library/user-event'
 import { CategoryNav } from '../CategoryNav'
 
 describe('CategoryNav', () => {
-  it('happy path: 4 kategori sekmesini render eder', () => {
-    render(<CategoryNav activeTab="imza" onTabChange={vi.fn()} />)
+  it('happy path: 5 kategori sekmesini render eder', () => {
+    render(<CategoryNav activeTab="tumu" onTabChange={vi.fn()} />)
+    expect(screen.getByRole('tab', { name: 'Tümü' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'İmza Kaseler' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Sıcak Tahıl Kaseleri' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Vegan' })).toBeInTheDocument()
