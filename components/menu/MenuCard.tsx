@@ -3,11 +3,11 @@
 // Bağlı:   MenuCardImage.tsx, MenuCardBadges.tsx, MenuCardInfo.tsx, menu-data.json, types/index.ts
 // Risk:    Alt bileşenlere yanlış prop mapping → sessiz veri kaybı
 // Dokunma: DESIGN_SYSTEM.md §2 (kart çerçevesi) — allergen satırı DESIGN_SYSTEM'de yoksa buradan kaldırılıp oraya taşınmalı
-// NOT:     allergens alanı önceki 3 alt bileşende hiç render edilmiyordu (Badges sadece tags, Info sadece
-//          kalori/protein/fiyat alıyor) — bu gerçek bir gap'ti. Aşağıda minimal bir satırla kapatıldı.
-// Değişiklik (bu session): "Özelleştir" butonu eklendi — /menu/customize/{item.id}'ye gider.
-// Sadece category !== "içecek" olan ürünlerde gösteriliyor (kullanıcı kararı — içecekler 5 adımlı
-// Base/Main/Garden akışına uygun değil, customizerCatalog şu an zaten boş/kase-odaklı).
+// NOT:     allergens alanı önceki 3 alt bileşende hiç render edilmiyordu — minimal bir satırla kapatıldı.
+// Değişiklik (bu session — DÜZELTME): Karar #7/#8 geri alındı. "Özelleştir" butonu artık TÜM
+// imza kaselerde değil, SADECE category === "build-your-own" olan tek üründe ("Benim Kâsem")
+// gösteriliyor. Bu ürün menu-data.json'a henüz eklenmedi (fiyat bekleniyor) — eklenene kadar
+// hiçbir kartta buton görünmeyecek, bu kasıtlı ve güvenli bir ara durum.
 
 import Link from "next/link"
 import { MenuCardImage } from "./MenuCardImage"
@@ -24,7 +24,7 @@ const ALLERGEN_LABELS: Record<string, string> = {
 }
 
 export function MenuCard({ item }: { item: BowlItem }) {
-  const isCustomizable = item.category !== "içecek"
+  const isCustomizable = item.category === "build-your-own"
 
   return (
     <article className="flex flex-col gap-2 rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/5">
