@@ -4,11 +4,10 @@
 // Risk:    Yanlış CTA hedefi → kullanıcı customizer/menüye ulaşamaz; LCP burada ölçülür
 // Dokunma: DESIGN_SYSTEM.md §6.1 (Hero animasyonu) · gerçek kase fotoğrafı gelene kadar
 //          placeholder kullanılır (Açık Sorun #2 — SESSION_INDEX.md)
-//          Bu session: ayrı slogan satırı kaldırıldı — slogan artık HeroHeadline.tsx içinde
-//          ana başlık (h1) olarak render ediliyor, tekrarı önlemek için burada duplicate yok.
-//          "Kâseni Yarat" CTA'sı GEÇİCİ olarak sig-teriyaki-tavuk'a yönlendiriliyor — henüz
-//          "build-your-own" kategorili özel bir bowl tanımlı değil (menu-data.json, Açık Sorun — yeni).
-//          Gerçek bir "build your own" ürünü eklendiğinde bu link ona güncellenmeli.
+//          Bu session — DÜZELTME (Karar #7 geri alındı): "Kâseni Yarat" CTA'sı artık
+//          sig-teriyaki-tavuk'a DEĞİL, "Benim Kâsem" ürününün id'sine (build-your-own-kasem)
+//          yönlendiriliyor. Bu ürün menu-data.json'a henüz eklenmedi (fiyat bekleniyor) —
+//          eklenene kadar bu link 404 verir. Kasıtlı: site henüz canlı müşteriye açık değil.
 
 import Link from 'next/link'
 import { HeroHeadline } from './HeroHeadline'
@@ -25,7 +24,7 @@ export function Hero() {
         </p>
         <div className="mt-8 flex flex-wrap gap-4">
           <Link
-            href="/menu/customize/sig-teriyaki-tavuk"
+            href="/menu/customize/build-your-own-kasem"
             className="rounded-full bg-olive-primary text-cream px-6 py-3 font-body font-semibold
                        hover:border-2 hover:border-transparent hover:bg-logo-gradient transition-colors duration-200"
           >
