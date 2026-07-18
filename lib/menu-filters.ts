@@ -8,7 +8,7 @@
 
 import { BowlItem } from '@/types'
 
-export type CategoryTabId = 'imza' | 'sicak-tahil' | 'vegan' | 'icecek'
+export type CategoryTabId = 'tumu' | 'imza' | 'sicak-tahil' | 'vegan' | 'icecek'
 export type AllergenId = NonNullable<BowlItem['allergens']>[number]
 
 interface FilterOption {
@@ -17,6 +17,7 @@ interface FilterOption {
 }
 
 export const CATEGORY_TABS: { id: CategoryTabId; label: string }[] = [
+  { id: 'tumu', label: 'Tümü' },
   { id: 'imza', label: 'İmza Kaseler' },
   { id: 'sicak-tahil', label: 'Sıcak Tahıl Kaseleri' },
   { id: 'vegan', label: 'Vegan' },
@@ -41,11 +42,15 @@ export const DIET_FILTERS: FilterOption[] = [
 
 /**
  * Aktif kategori sekmesine göre ürünleri filtreler.
+ * Edge case: 'tumu' → hiç filtre uygulanmaz, tüm ürünler döner (varsayılan sekme —
+ *            Oturum 2'de kabul edilmiş "sayfa yüklendiğinde tüm ürünler görünür" davranışını korur).
  * Edge case: 'vegan' ve 'sicak-tahil' category enum'unda yok → tags[] üzerinden eşlenir.
  * Edge case: eşleşen ürün yoksa boş dizi döner (crash yok, çağıran taraf boş state gösterir).
  */
 export function filterByCategory(items: BowlItem[], tab: CategoryTabId): BowlItem[] {
   switch (tab) {
+    case 'tumu':
+      return items
     case 'imza':
       return items.filter((item) => item.category === 'signature')
     case 'icecek':
