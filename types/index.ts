@@ -3,6 +3,11 @@
 // Bağlı:   menu-data.json, lib/customizer-data.ts, MenuCard, useCartStore, useCustomizerStore
 // Risk:    Tip burada bozulursa menü kartı, sepet, customizer state ve fiyat hesabı aynı anda kırılır
 // Dokunma: ARCHITECTURE.md §3 (Veri Modeli) + CUSTOMIZER_SPEC.md §3.1 — değişiklik önce orada onaylanmalı
+//
+// Değişiklik (bu session — DÜZELTME + ekleme, bkz. docs/schema-changes/
+// 20260718070000_cartitem_unitcalories_ve_fulfillment_channel.md):
+// 1. CartItem.unitCalorie7s → unitCalories (yazım hatası düzeltildi)
+// 2. FulfillmentChannel tipi eklendi — sepet/store seviyesinde, ürün bazlı DEĞİL
 
 export type BowlItem = {
   id: string
@@ -69,6 +74,15 @@ export type CustomizerTotals = {
   carbs: number
   fat: number
 }
+
+// --- Sepet / teslimat kanalı — bkz. docs/schema-changes/
+// 20260718070000_cartitem_unitcalories_ve_fulfillment_channel.md ---
+
+// Sepet/oturum seviyesinde tek alan — ürün (CartItem) bazlı DEĞİL.
+// Yemeksepeti/Getir/Trendyol bilinçli olarak dahil edilmedi (kullanıcı siteden ayrılıp
+// marketplace'e yönlendiriliyor, kendi sepetimiz tamamlanmıyor — ayrı bir UI akışı).
+// "delivery" (kendi kurye) ileride buraya eklenecek, CartItem şeması etkilenmeyecek.
+export type FulfillmentChannel = "pickup" | "dine-in"
 
 export type CartItem = {
   cartId: string
