@@ -31,6 +31,10 @@ const mockItems: BowlItem[] = [
 ]
 
 describe('filterByCategory', () => {
+  it('happy path: tumu sekmesi tüm ürünleri döner (varsayılan sekme)', () => {
+    expect(filterByCategory(mockItems, 'tumu')).toHaveLength(4)
+  })
+
   it('happy path: imza sekmesi sadece signature döner', () => {
     expect(filterByCategory(mockItems, 'imza').map((i) => i.id)).toEqual(['1'])
   })
