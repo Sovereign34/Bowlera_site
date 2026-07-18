@@ -2,16 +2,17 @@
 // Amaç:    "Kâseni Yarat" customizer akışının ana sayfası — VisualPreview + adım alanı + özet panelini birleştirir
 // Bağlı:   store/useCustomizerStore.ts, store/useCartStore.ts, components/customizer/*, lib/menu-data.json
 // Risk:    Sepete ekleme burada gerçek useCartStore'a bağlanıyor — yanlış CartItem şeması sepet bütünlüğünü bozar (types/index.ts §CartItem)
-// Dokunma: CUSTOMIZER_SPEC.md §1, §3, §6 — Step bileşenleri (StepBase vb.) henüz yazılmadı, TODO olarak bırakıldı.
-//          customizerCatalog şu an boş ([]) — gerçek mutfak verisi eklenene kadar adım alanı içerik göstermeyecek (BSC-5).
+// Dokunma: CUSTOMIZER_SPEC.md §1, §3, §6
 //
-// ⚠️ ONAY BEKLEYEN VARSAYIMLAR (bu session'da doğrulanamadı, PR öncesi teyit edilmeli):
-// 1. lib/menu-data.json'ın bir BowlItem[] dizisi export ettiği varsayıldı. Gerçek şekli farklıysa
-//    (örn. { bowls: BowlItem[] }) aşağıdaki `menuData.find(...)` satırı güncellenmeli.
-// 2. Sepete ekleme sonrası customizer state otomatik reset() ediliyor (yeni kâse için temiz başlangıç).
-//    Bu bir tasarım kararı olarak alındı — istenmiyorsa kaldırılabilir.
-// 3. `notFound()` bir Client Component içinde çağrılıyor — App Router'da desteklenir, ama bu proje için
-//    ilk kullanım, davranış canlıda görsel doğrulanmalı.
+// Değişiklik (bu session — DÜZELTME): TODO placeholder kaldırıldı, 5 Step bileşeni (StepBase,
+// StepMain, StepGarden, StepSignatureFlavor, StepFinish) currentStep'e göre koşullu render
+// ediliyor. customizerCatalog şu an TEST VERİSİYLE dolu (lib/customizer-data.ts, SESSION_INDEX.md
+// Açık Sorun #17) — gerçek mutfak verisi gelene kadar sadece layout/akış testi içindir.
+//
+// ⚠️ ONAY BEKLEYEN VARSAYIMLAR (değişmedi, hâlâ teyit edilmedi):
+// 1. lib/menu-data.json'ın bir BowlItem[] dizisi export ettiği varsayıldı.
+// 2. Sepete ekleme sonrası customizer state otomatik reset() ediliyor.
+// 3. `notFound()` bir Client Component içinde çağrılıyor — davranış canlıda görsel doğrulanmalı.
 
 "use client"
 
@@ -24,6 +25,11 @@ import { useCartStore } from "@/store/useCartStore"
 import VisualPreview from "@/components/customizer/VisualPreview"
 import SummaryPanel from "@/components/customizer/SummaryPanel"
 import MobileSummaryDrawer from "@/components/customizer/MobileSummaryDrawer"
+import StepBase from "@/components/customizer/StepBase"
+import StepMain from "@/components/customizer/StepMain"
+import StepGarden from "@/components/customizer/StepGarden"
+import StepSignatureFlavor from "@/components/customizer/StepSignatureFlavor"
+import StepFinish from "@/components/customizer/StepFinish"
 
 type Props = {
   params: { id: string }
@@ -71,12 +77,12 @@ export default function CustomizePage({ params }: Props) {
             <VisualPreview />
           </div>
 
-          {/* TODO: Step bileşenleri (StepBase, StepMain, StepGarden, StepSignatureFlavor, StepFinish)
-              henüz yazılmadı. customizerCatalog boş olduğu sürece (lib/customizer-data.ts) bu alan
-              gerçek ürün seçimi göstermeyecek. CUSTOMIZER_SPEC.md §2'ye göre currentStep'e göre
-              ilgili Step bileşeni burada render edilecek. */}
-          <div className="rounded-xl border border-dashed border-charcoal/20 p-6 text-center font-body text-sm text-espresso">
-            Adım {currentStep}/5 — adım bileşenleri henüz eklenmedi (TODO)
+          <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+            {currentStep === 1 && <StepBase />}
+            {currentStep === 2 && <StepMain />}
+            {currentStep === 3 && <StepGarden />}
+            {currentStep === 4 && <StepSignatureFlavor />}
+            {currentStep === 5 && <StepFinish />}
           </div>
         </div>
 
