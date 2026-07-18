@@ -1,11 +1,11 @@
 // components/home/Hero.tsx
-// Amaç:    Ana sayfa açılış bölümü — başlık, slogan, CTA'lar, kase görseli
+// Amaç:    Ana sayfa açılış bölümü — başlık (slogan), CTA'lar, kase görseli
 // Bağlı:   app/page.tsx
 // Risk:    Yanlış CTA hedefi → kullanıcı customizer/menüye ulaşamaz; LCP burada ölçülür
 // Dokunma: DESIGN_SYSTEM.md §6.1 (Hero animasyonu) · gerçek kase fotoğrafı gelene kadar
 //          placeholder kullanılır (Açık Sorun #2 — SESSION_INDEX.md)
-//          Slogan eklendi (bu session) — DESIGN_SYSTEM.md bu sohbete yüklenmediği için mevcut
-//          Hero tipografi kalıpları (font-body, text-espresso) takip edildi, doğrulanmalı.
+//          Bu session: ayrı slogan satırı kaldırıldı — slogan artık HeroHeadline.tsx içinde
+//          ana başlık (h1) olarak render ediliyor, tekrarı önlemek için burada duplicate yok.
 
 import Link from 'next/link'
 import { HeroHeadline } from './HeroHeadline'
@@ -16,9 +16,6 @@ export function Hero() {
     <section className="mx-auto max-w-6xl px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
       <div>
         <HeroHeadline />
-        <p className="mt-3 font-body text-lg font-semibold text-olive-primary max-w-md">
-          Sağlıklı beslenme, sağlıklı yaşa, gücünü hisset.
-        </p>
         <p className="mt-4 font-body text-espresso max-w-md">
           Doğrudan yerel çiftçilerden aldığımız taze malzemelerle, senin kurallarınla
           hazırlanan sağlıklı kaseler.
