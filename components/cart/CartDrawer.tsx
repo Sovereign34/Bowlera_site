@@ -1,12 +1,17 @@
 // components/cart/CartDrawer.tsx
-// Amaç:    Sepet çekmecesini render eder — ürün listesi, adet, toplam fiyat, ürün kaldırma
-// Bağlı:   store/useCartStore.ts (cart, removeFromCart)
+// Amaç:    Sepet çekmecesini render eder — teslimat kanalı seçici, ürün listesi, adet, toplam fiyat, ürün kaldırma
+// Bağlı:   store/useCartStore.ts (cart, removeFromCart, fulfillmentChannel), FulfillmentChannelSelector.tsx
 // Risk:    Toplam yanlış hesaplanırsa veya removeFromCart hatalı satır silerse kullanıcı yanlış sipariş verir
 // Dokunma: types/index.ts (CartItem) — bowlItem null olabilir (customizer ürünleri), bu durumda "Özel Kâse" gösterilir
+//
+// Değişiklik (bu session — ekleme): FulfillmentChannelSelector eklendi, sepetin en üstünde,
+// başlığın hemen altında — cart boş olsa bile gösterilir (kullanıcı ürün eklemeden önce de
+// kanalı seçebilsin diye, bkz. konuşma kararı).
 
 "use client"
 
 import { useCartStore } from "@/store/useCartStore"
+import FulfillmentChannelSelector from "./FulfillmentChannelSelector"
 
 function formatPrice(value: number): string {
   return `₺${value.toFixed(2)}`
@@ -39,6 +44,8 @@ export default function CartDrawer({ isOpen, onClose }: Props) {
             ✕
           </button>
         </div>
+
+        <FulfillmentChannelSelector />
 
         {cart.length === 0 ? (
           <p className="font-body text-espresso">Sepetiniz boş.</p>
