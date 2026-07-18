@@ -102,5 +102,18 @@
     "protein": 0,
     "carbs": 14,
     "fat": 0
+  },
+  {
+    "id": "build-your-own-kasem",
+    "name": "Benim Kâsem",
+    "category": "build-your-own",
+    "price": 999,
+    "image": "build-your-own-kasem.webp",
+    "tags": ["TEST VERİSİ — GERÇEK DEĞİL"],
+    "allergens": [],
+    "calories": 0,
+    "protein": 0,
+    "carbs": 0,
+    "fat": 0
   }
 ]
