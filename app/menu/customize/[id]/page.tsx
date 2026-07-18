@@ -4,10 +4,11 @@
 // Risk:    Sepete ekleme burada gerçek useCartStore'a bağlanıyor — yanlış CartItem şeması sepet bütünlüğünü bozar (types/index.ts §CartItem)
 // Dokunma: CUSTOMIZER_SPEC.md §1, §3, §6
 //
-// Değişiklik (bu session — DÜZELTME): TODO placeholder kaldırıldı, 5 Step bileşeni (StepBase,
-// StepMain, StepGarden, StepSignatureFlavor, StepFinish) currentStep'e göre koşullu render
-// ediliyor. customizerCatalog şu an TEST VERİSİYLE dolu (lib/customizer-data.ts, SESSION_INDEX.md
-// Açık Sorun #17) — gerçek mutfak verisi gelene kadar sadece layout/akış testi içindir.
+// Değişiklik (bu session — DÜZELTME): Başlık "{bowl.name} — Kâseni Yarat" yerine sadece
+// "{bowl.name}" olacak şekilde düzeltildi. Diğer her şey bir önceki halle aynı: 5 Step bileşeni
+// (StepBase, StepMain, StepGarden, StepSignatureFlavor, StepFinish) currentStep'e göre koşullu
+// render ediliyor. customizerCatalog şu an TEST VERİSİYLE dolu (lib/customizer-data.ts,
+// SESSION_INDEX.md Açık Sorun #17) — gerçek mutfak verisi gelene kadar sadece layout/akış testi içindir.
 //
 // ⚠️ ONAY BEKLEYEN VARSAYIMLAR (değişmedi, hâlâ teyit edilmedi):
 // 1. lib/menu-data.json'ın bir BowlItem[] dizisi export ettiği varsayıldı.
@@ -68,7 +69,7 @@ export default function CustomizePage({ params }: Props) {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 pb-32 md:pb-8">
       <h1 className="font-display text-3xl font-bold text-charcoal">
-        {bowl?.name} — Kâseni Yarat
+        {bowl?.name}
       </h1>
 
       <div className="mt-6 grid gap-8 md:grid-cols-[minmax(0,1fr)_360px]">
