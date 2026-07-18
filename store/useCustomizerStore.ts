@@ -82,7 +82,14 @@ export const useCustomizerStore = create<CustomizerState>((set, get) => ({
     })),
 
   // Guard: step > maxReachedStep+1 ise no-op — CUSTOMIZER_SPEC.md §3.2 (URL'den ileri atlama engeli)
-  goToStep: (step) => set((state) => (step > state.maxReachedStep + 1 ? state : { currentStep: step })),
+  // Fix (Oturum 4): nextStep ile aynı mantık — izin verilen bir adıma gidiliyorsa maxReachedStep de
+  // birlikte güncellenir, böylece sayfa yenilemesinde ilerleme kaybı riski kalmaz.
+  goToStep: (step) =>
+    set((state) =>
+      step > state.maxReachedStep + 1
+        ? state
+        : { currentStep: step, maxReachedStep: Math.max(state.maxReachedStep, step) as Step }
+    ),
 
   // Mevcut adım geçersizse ilerlemez — CUSTOMIZER_SPEC.md §3.3
   nextStep: () =>
