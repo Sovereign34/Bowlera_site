@@ -52,8 +52,10 @@ export function filterByCategory(items: BowlItem[], tab: CategoryTabId): BowlIte
       return items.filter((item) => item.category === 'içecek')
     case 'vegan':
       return items.filter((item) => item.tags.includes('vegan'))
+    // Not: menu-data.json'da bu etiket tire ile ('sıcak-tahıl') tanımlı — diğer tag'lerin
+    // boşluklu kalıbından (örn. "yüksek protein") farklı, canlı veriyle doğrulandı (2026-07-18 bug fix).
     case 'sicak-tahil':
-      return items.filter((item) => item.tags.includes('sıcak tahıl'))
+      return items.filter((item) => item.tags.includes('sıcak-tahıl'))
   }
 }
 
