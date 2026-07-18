@@ -1,17 +1,24 @@
 // components/layout/Header.tsx
-// Amaç:    Site geneli üst navigasyon — logo, menü linkleri, sepet ikonu (statik)
-// Bağlı:   app/layout.tsx (her sayfada render edilir)
+// Amaç:    Site geneli üst navigasyon — logo, menü linkleri, sepet ikonu + çekmece
+// Bağlı:   app/layout.tsx (her sayfada render edilir), store/useCartStore.ts (CartBadge/CartDrawer üzerinden)
 // Risk:    Bozuk navigasyon → kullanıcı menüye/sepete ulaşamaz, sipariş kaybı riski
-// Dokunma: Sepet sayaç mantığı Oturum 4'te useCartStore ile bağlanacak — şimdilik statik ikon (TODO)
+// Dokunma: Sepet sayaç mantığı Oturum 4'te useCartStore ile bağlandı (CartBadge/CartDrawer üzerinden).
 //          Logo: /public/images/logo-bowlera.png — orijinal mor/pembe/turuncu degrade,
 //          site paletine (zeytin/amber/toprak kızılı) uyarlanarak recolor edildi (Session 1).
 
+"use client"
+
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ShoppingBag } from 'lucide-react'
 import { NAV_LINKS } from './navLinks'
+import CartBadge from '@/components/cart/CartBadge'
+import CartDrawer from '@/components/cart/CartDrawer'
 
 export function Header() {
+  const [isCartOpen, setIsCartOpen] = useState(false)
+
   return (
     <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur border-b border-charcoal/10">
       <div className="mx-auto max-w-6xl px-4 flex items-center justify-between h-16">
@@ -37,14 +44,17 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        {/* TODO Oturum 4: useCartStore.cart.length ile sayaç + logo-degrade pulse (DESIGN_SYSTEM §6.1) */}
         <button
-          aria-label="Sepet"
+          type="button"
+          aria-label="Sepeti aç"
+          onClick={() => setIsCartOpen(true)}
           className="relative p-2 rounded-full hover:bg-olive-primary/10 transition-colors duration-200"
         >
           <ShoppingBag className="w-5 h-5 text-charcoal" />
+          <CartBadge />
         </button>
       </div>
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </header>
   )
 }
