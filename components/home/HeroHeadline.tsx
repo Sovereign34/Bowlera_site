@@ -3,12 +3,14 @@
 // Bağlı:   Hero.tsx
 // Risk:    Framer Motion yanlış kurulursa LCP gecikir — bu yüzden yalnızca transform/opacity kullanılır
 // Dokunma: DESIGN_SYSTEM.md §6.1 satır 1 — 600ms ease-out, 80ms stagger
+// Değişiklik (bu session): Başlık "Şehrin Ritmini Yakalayan Taze ve Sağlıklı Kaseler" yerine
+// marka sloganı "Sağlıklı Beslen, Sağlıklı Yaşa, Gücünü Hisset" olarak güncellendi.
 
 'use client'
 
 import { motion } from 'framer-motion'
 
-const WORDS = ['Şehrin', 'Ritmini', 'Yakalayan', 'Taze', 've', 'Sağlıklı', 'Kaseler']
+const WORDS = ['Sağlıklı', 'Beslen,', 'Sağlıklı', 'Yaşa,', 'Gücünü', 'Hisset']
 
 export function HeroHeadline() {
   return (
