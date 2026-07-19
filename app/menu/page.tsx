@@ -20,6 +20,17 @@
 // mobilde 2 sütun için gereken 456px hiçbir telefon genişliğinde karşılanmıyordu, sonuç 1 sütuna
 // düşüyordu (eski grid-cols-2 davranışını bozan öngörülmemiş bir yan etki). 150px, en dar telefonda
 // (360px) bile 2 sütunu garanti eder: (360-32 padding-16 gap)/2 = 156px ≥ 150px.
+//
+// Değişiklik (bu session — ÜÇÜNCÜ DÜZELTME, kullanıcı onayıyla, araştırmayla doğrulandı):
+// Mobilde 2 sütun yerine 1 sütun (tam genişlik kart) yapıldı. Gerekçe: kullanıcının mantıksal
+// argümanı ("yemek ideal büyüklükte görünmeli") + araştırma bulgusu — Uber Eats/DoorDash gibi
+// pazar yeri uygulamaları menü öğelerini tek sütun liste olarak gösteriyor; ayrıca kendi web
+// sitesinde (Bowlera burada) platform kısıtı olmadığı için öne çıkan yemek görselleri tam
+// genişlikte gösterilebilir — büyük/atmosferik görsel kullanma serbestisi var. Yüksek kaliteli
+// menü fotoğrafının sipariş oranını %25-44 artırdığı birden fazla kaynakta tekrarlanıyor; küçük/
+// sıkışık fotoğraf bu etkiyi zayıflatıyor. Uygulama: `sm:` (640px) öncesi grid-cols-1, sonrasında
+// auto-fill/minmax(240px,1fr). Masaüstünde sütun sayısının sınırsız artmasını (önceki oturumda
+// tespit edilen 7-sütun sorunu) önlemek için <main>'e max-w-7xl mx-auto eklendi.
 
 'use client'
 
@@ -57,7 +68,7 @@ export default function MenuPage() {
   }
 
   return (
-    <main className="px-4 py-8">
+    <main className="mx-auto max-w-7xl px-4 py-8">
       <h1 className="mb-6 font-heading text-3xl text-olive-deep">Menü</h1>
 
       <CategoryNav activeTab={activeTab} onTabChange={setActiveTab} />
@@ -75,7 +86,7 @@ export default function MenuPage() {
             Bu filtrelerle eşleşen ürün yok — filtreleri temizlemeyi dene.
           </p>
         ) : (
-          <div className="grid flex-1 grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
+          <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
             {filteredItems.map((item) => (
               <MenuCard key={item.id} item={item} />
             ))}
