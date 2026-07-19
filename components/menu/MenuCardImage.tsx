@@ -3,6 +3,13 @@
 // Bağlı:   MenuCard.tsx
 // Risk:    Yanlış aspect-ratio → CLS (Core Web Vitals ihlali)
 // Dokunma: DESIGN_SYSTEM.md §2.1 — logo degrade sadece 4 izinli yerden biri burada kullanılıyor
+//
+// Değişiklik (bu session — DÜZELTME, kullanıcı onayıyla):
+// `sizes` değeri sabit "300px" yerine grid'in gerçek breakpoint davranışına eşitlendi.
+// Gerekçe: Next.js resmi dokümantasyonu, sizes'ın görselin gerçek render edilen genişliğine
+// eşleşmesi gerektiğini belirtiyor — aksi halde tarayıcı olduğundan büyük/küçük görsel indirir.
+// Bu, page.tsx'teki grid-cols-[repeat(auto-fill,minmax(220px,1fr))] değişikliğiyle birlikte
+// uygulanmalı (aynı KARAR BİLDİRİMİ, tek problem/tek çözüm kuralı gereği iki ayrı dosya).
 
 import Image from "next/image"
 
@@ -26,7 +33,7 @@ export function MenuCardImage({
         alt={name}
         fill
         className="object-cover"
-        sizes="(max-width: 768px) 50vw, 300px"
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
       />
       {isSuperFood && (
         <span className="absolute top-2 left-2 rounded-full bg-[linear-gradient(135deg,#8A2387_0%,#E94057_50%,#F27121_100%)] px-3 py-1 text-xs font-body font-semibold text-white">
