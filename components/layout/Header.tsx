@@ -11,7 +11,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ShoppingBag } from 'lucide-react'
+import { ShoppingBag, User } from 'lucide-react'
 import { NAV_LINKS } from './navLinks'
 import CartBadge from '@/components/cart/CartBadge'
 import CartDrawer from '@/components/cart/CartDrawer'
@@ -44,15 +44,28 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <button
-          type="button"
-          aria-label="Sepeti aç"
-          onClick={() => setIsCartOpen(true)}
-          className="relative p-2 rounded-full hover:bg-olive-primary/10 transition-colors duration-200"
-        >
-          <ShoppingBag className="w-5 h-5 text-charcoal" />
-          <CartBadge />
-        </button>
+        <div className="flex items-center gap-1">
+          {/* Karar #19/#20 (bu sohbet): oturum durumuna göre ikon/link değişmiyor — henüz
+              SessionProvider kurulmadı (app/layout.tsx'e dokunulmadı, ayrı görev). Şimdilik
+              her zaman /giris'e yönlendiriyor, giriş yapmış kullanıcı için de aynı görünüyor.
+              Bilinçli sınırlama — Açık Sorun olarak loglanmalı. */}
+          <Link
+            href="/giris"
+            aria-label="Giriş yap"
+            className="relative p-2 rounded-full hover:bg-olive-primary/10 transition-colors duration-200"
+          >
+            <User className="w-5 h-5 text-charcoal" />
+          </Link>
+          <button
+            type="button"
+            aria-label="Sepeti aç"
+            onClick={() => setIsCartOpen(true)}
+            className="relative p-2 rounded-full hover:bg-olive-primary/10 transition-colors duration-200"
+          >
+            <ShoppingBag className="w-5 h-5 text-charcoal" />
+            <CartBadge />
+          </button>
+        </div>
       </div>
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </header>
