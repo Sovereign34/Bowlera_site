@@ -24,12 +24,15 @@
 // kayma mesafesi 0'a, süre 0'a iniyor (§6.2 kural 1). Yükseklik/flex/snap mimarisine
 // DOKUNULMADI — önceki 3 kırılmanın kaynağı olan kısım bu çözümde hiç yok.
 //
-// Değişiklik (BU SESSION — DÜZELTME, kullanıcı onayıyla, "kart geçişlerine etkileyici animasyon"
+// Değişiklik (önceki tur — DÜZELTME, kullanıcı onayıyla, "kart geçişlerine etkileyici animasyon"
 // talebi): Scroll-reveal'a HAFİF SCALE (0.96→1) + INDEX BAZLI STAGGER (kademeli gecikme) eklendi.
 // Stagger, satır başına `index % 6` ile sınırlandı — büyük gridlerde gecikmenin absürt uzamasını
 // önlemek için (her satır kendi içinde 0/0.06/0.12.../0.30sn gecikmeyle sırayla beliriyor).
-// `scale` de transform'un bir parçası olduğu için layout/CLS riski YOK (§6.2 kural 2 hâlâ geçerli).
-// `useReducedMotion()` aktifken scale de 1'e sabitleniyor, delay 0'a iniyor (§6.2 kural 1 korunuyor).
+//
+// Değişiklik (BU SESSION — DÜZELTME, kullanıcı onayıyla, "animasyon belirginleşmeli" talebi):
+// Mesafe/ölçek değerleri büyütüldü — `y: 24→40`, `scale: 0.96→0.92`, süre `0.5s→0.6s` — canlıda
+// fark edilir olması için. Hâlâ SADECE `opacity`+`transform` (§6.2 kural 2 korunuyor).
+// `useReducedMotion()` aktifken scale/y/delay yine 0'a/1'e sabitleniyor (§6.2 kural 1 korunuyor).
 // Grid/height/FilterPanel yapısına DOKUNULMADI (önceki kırılmaların kaynağı olan kısım bu değişiklikte yok).
 
 'use client'
@@ -64,8 +67,8 @@ export default function MenuPage() {
   const cardVariants = {
     hidden: {
       opacity: 0,
-      y: shouldReduceMotion ? 0 : 24,
-      scale: shouldReduceMotion ? 1 : 0.96,
+      y: shouldReduceMotion ? 0 : 40,
+      scale: shouldReduceMotion ? 1 : 0.92,
     },
     visible: {
       opacity: 1,
@@ -78,7 +81,7 @@ export default function MenuPage() {
   // (6, grid'in en geniş breakpoint'inde muhtemel sütun sayısını aşacak şekilde güvenli bir üst sınır;
   // gerçek sütun sayısı auto-fill/minmax olduğu için build-time'da bilinmiyor, bu yüzden sabit tutuldu.)
   const getCardTransition = (index: number) => ({
-    duration: shouldReduceMotion ? 0 : 0.5,
+    duration: shouldReduceMotion ? 0 : 0.6,
     ease: 'easeOut' as const,
     delay: shouldReduceMotion ? 0 : Math.min(index % 6, 5) * 0.06,
   })
