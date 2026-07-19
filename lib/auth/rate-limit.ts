@@ -10,6 +10,13 @@
 // Gerçek trafik ölçeğinde Upstash Redis (Vercel Marketplace) gibi paylaşımlı bir store'a
 // geçilmeli. Şimdilik MVP için kabul edilebilir — SMS bombalama riskini SIFIRA indirmez ama
 // tek instance'ta (çoğu düşük-trafik senaryosu) etkili çalışır.
+//
+// Değişiklik (BU SESSION — ÖZELLİK, kullanıcı talebiyle "#37: profile route'a rate-limit
+// entegre et"): OTP bucket'ına ve `checkOtpRateLimit`'e HİÇ DOKUNULMADI — muhtemel mevcut
+// testleriyle uyumluluğu bozmamak için (dosya görülmedi, riske girilmedi). Bunun yerine
+// AYRI bir bucket (`profileBuckets`) ve AYRI bir fonksiyon (`checkProfileRateLimit`)
+// eklendi — aynı in-memory Map deseni, ama profil PATCH istekleri için kendi (daha gevşek)
+// sınırıyla. Aynı "çoklu instance'ta garantisiz" uyarısı bu yeni fonksiyon için de geçerli.
 
 type Bucket = { count: number; resetAt: number }
 
@@ -38,4 +45,33 @@ export function checkOtpRateLimit(key: string): { allowed: boolean; retryAfterMs
 // Test/temizlik amaçlı — production kodunda çağrılmaz
 export function _resetRateLimitStore(): void {
   buckets.clear()
+}
+
+// --- Profil güncelleme (PATCH /api/user/profile) için ayrı, daha gevşek sınır ---
+
+const profileBuckets = new Map<string, Bucket>()
+
+const PROFILE_WINDOW_MS = 5 * 60 * 1000 // 5 dakika
+const PROFILE_MAX_REQUESTS = 10 // aynı telefon için 5dk'da en fazla 10 PATCH isteği
+
+export function checkProfileRateLimit(key: string): { allowed: boolean; retryAfterMs?: number } {
+  const now = Date.now()
+  const bucket = profileBuckets.get(key)
+
+  if (!bucket || now > bucket.resetAt) {
+    profileBuckets.set(key, { count: 1, resetAt: now + PROFILE_WINDOW_MS })
+    return { allowed: true }
+  }
+
+  if (bucket.count >= PROFILE_MAX_REQUESTS) {
+    return { allowed: false, retryAfterMs: bucket.resetAt - now }
+  }
+
+  bucket.count += 1
+  return { allowed: true }
+}
+
+// Test/temizlik amaçlı — production kodunda çağrılmaz
+export function _resetProfileRateLimitStore(): void {
+  profileBuckets.clear()
 }
