@@ -6,16 +6,16 @@
 // Dokunma: lib/menu-filters.ts'teki filterByCategory/filterByExcludedAllergens/filterByDietTags imzaları
 //          değişirse burası da güncellenmeli.
 //
-// Değişiklik (bu session — DÜZELTME, kullanıcı onayıyla): grid-cols sabitten auto-fill/minmax'e çevrildi.
-// Değişiklik (bu session — İKİNCİ DÜZELTME, kullanıcı onayıyla): minmax alt sınırı 150px.
-// Değişiklik (bu session — ÜÇÜNCÜ DÜZELTME, kullanıcı onayıyla): mobilde tek sütun, tam genişlik kart.
+// Değişiklik (önceki session — DÜZELTME, kullanıcı onayıyla): grid-cols sabitten auto-fill/minmax'e çevrildi.
+// Değişiklik (önceki session — İKİNCİ DÜZELTME, kullanıcı onayıyla): minmax alt sınırı 150px.
+// Değişiklik (önceki session — ÜÇÜNCÜ DÜZELTME, kullanıcı onayıyla): mobilde tek sütun, tam genişlik kart.
 //
 // ⚠️ MOBİL SNAP-SCROLL DENEMESİ 3 KEZ CANLIDA KIRILDI, TERK EDİLDİ — bkz. git geçmişi / önceki
 // session_log bloğu. Kök neden: FilterPanel'in (uzun, 9 checkbox) inline gösterimiyle "sayfa tam
 // viewport'a sığsın" mimarisi birlikte çalışmıyordu. Yeniden gündeme gelmeden önce FilterPanel'in
 // katlanabilir/drawer yapılması gibi bir ürün kararı gerekiyor.
 //
-// Değişiklik (bu session — YEDİNCİ DÜZELTME / ÖZELLİK, DESIGN_SYSTEM.md §6.1 görülüp kullanıcı
+// Değişiklik (önceki session — YEDİNCİ DÜZELTME / ÖZELLİK, DESIGN_SYSTEM.md §6.1 görülüp kullanıcı
 // onayıyla): Snap-scroll'un yerine DESIGN_SYSTEM.md §6.1'deki "Bölüm başlıkları/kartlar
 // (scroll reveal)" satırı birebir uygulandı — kart, %10'u viewport'a girince alttan fade+slide
 // ile beliriyor, 500ms `ease-out`, TEK SEFERLİK (`viewport={{ once: true }}`, DESIGN_SYSTEM §6.2
@@ -23,6 +23,14 @@
 // §6.2 kural 2). `useReducedMotion()` ile `prefers-reduced-motion` kontrolü yapılıyor — aktifse
 // kayma mesafesi 0'a, süre 0'a iniyor (§6.2 kural 1). Yükseklik/flex/snap mimarisine
 // DOKUNULMADI — önceki 3 kırılmanın kaynağı olan kısım bu çözümde hiç yok.
+//
+// Değişiklik (BU SESSION — DÜZELTME, kullanıcı onayıyla, "kart geçişlerine etkileyici animasyon"
+// talebi): Scroll-reveal'a HAFİF SCALE (0.96→1) + INDEX BAZLI STAGGER (kademeli gecikme) eklendi.
+// Stagger, satır başına `index % 6` ile sınırlandı — büyük gridlerde gecikmenin absürt uzamasını
+// önlemek için (her satır kendi içinde 0/0.06/0.12.../0.30sn gecikmeyle sırayla beliriyor).
+// `scale` de transform'un bir parçası olduğu için layout/CLS riski YOK (§6.2 kural 2 hâlâ geçerli).
+// `useReducedMotion()` aktifken scale de 1'e sabitleniyor, delay 0'a iniyor (§6.2 kural 1 korunuyor).
+// Grid/height/FilterPanel yapısına DOKUNULMADI (önceki kırılmaların kaynağı olan kısım bu değişiklikte yok).
 
 'use client'
 
@@ -54,10 +62,26 @@ export default function MenuPage() {
   }, [items, activeTab, excludedAllergens, selectedDietTags])
 
   const cardVariants = {
-    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 24 },
-    visible: { opacity: 1, y: 0 },
+    hidden: {
+      opacity: 0,
+      y: shouldReduceMotion ? 0 : 24,
+      scale: shouldReduceMotion ? 1 : 0.96,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+    },
   }
-  const cardTransition = { duration: shouldReduceMotion ? 0 : 0.5, ease: 'easeOut' as const }
+
+  // Satır başına stagger: index % 6 ile sınırlandı, her kart 0.06sn arayla beliriyor.
+  // (6, grid'in en geniş breakpoint'inde muhtemel sütun sayısını aşacak şekilde güvenli bir üst sınır;
+  // gerçek sütun sayısı auto-fill/minmax olduğu için build-time'da bilinmiyor, bu yüzden sabit tutuldu.)
+  const getCardTransition = (index: number) => ({
+    duration: shouldReduceMotion ? 0 : 0.5,
+    ease: 'easeOut' as const,
+    delay: shouldReduceMotion ? 0 : Math.min(index % 6, 5) * 0.06,
+  })
 
   if (items.length === 0) {
     return (
@@ -87,14 +111,14 @@ export default function MenuPage() {
           </p>
         ) : (
           <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
-            {filteredItems.map((item) => (
+            {filteredItems.map((item, index) => (
               <motion.div
                 key={item.id}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.1 }}
                 variants={cardVariants}
-                transition={cardTransition}
+                transition={getCardTransition(index)}
               >
                 <MenuCard item={item} />
               </motion.div>
