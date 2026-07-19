@@ -21,28 +21,36 @@ export default function VisualPreview({ className }: Props) {
   const layers = getVisualLayers(selections, customizerCatalog)
 
   return (
-    <div
-      className={`relative aspect-square w-full overflow-hidden rounded-full bg-cream ${className ?? ""}`}
-      role="img"
-      aria-label="Kâse önizlemesi"
-    >
-      {layers.map((layer) => (
-        <motion.img
-          key={layer.id}
-          src={layer.src}
-          alt=""
-          aria-hidden="true"
-          style={{ zIndex: layer.zIndex }}
-          className="absolute inset-0 h-full w-full object-contain"
-          initial={false}
-          animate={
-            reduceMotion
-              ? { opacity: layer.active ? 1 : 0 }
-              : { opacity: layer.active ? 1 : 0, scale: layer.active ? 1 : 0.9 }
-          }
-          transition={{ duration: reduceMotion ? 0 : 0.25, ease: "easeOut" }}
-        />
-      ))}
+    <div className={className}>
+      <div
+        className="relative aspect-square w-full overflow-hidden rounded-full bg-cream"
+        role="img"
+        aria-label="Kâse önizlemesi"
+      >
+        {layers.map((layer) => (
+          <motion.img
+            key={layer.id}
+            src={layer.src}
+            alt=""
+            aria-hidden="true"
+            style={{ zIndex: layer.zIndex }}
+            className="absolute inset-0 h-full w-full object-contain"
+            initial={false}
+            animate={
+              reduceMotion
+                ? { opacity: layer.active ? 1 : 0 }
+                : { opacity: layer.active ? 1 : 0, scale: layer.active ? 1 : 0.9 }
+            }
+            transition={{ duration: reduceMotion ? 0 : 0.25, ease: "easeOut" }}
+          />
+        ))}
+      </div>
+      {/* Karar #10: gerçek ürün fotoğrafı gelene kadar (ve sonrasında da) şeffaflık için.
+          Not: "temsilîdir" değil bilinçli olarak — â/î render sorunu (Karar #14) yeni bir
+          kullanıcıya-görünür yerde tekrar açılmasın diye aksan içermeyen ifade seçildi. */}
+      <p className="mt-2 text-center text-xs text-espresso/70 font-body">
+        Gerçek ürün, görselden farklılık gösterebilir.
+      </p>
     </div>
   )
 }
