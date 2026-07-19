@@ -7,12 +7,19 @@
 //          değişirse burası da güncellenmeli. useState eklendiği için dosya 'use client' oldu (önceden server component'ti).
 //
 // Değişiklik (bu session — DÜZELTME, kullanıcı onayıyla):
-// Grid, sabit grid-cols-2/3/4 yerine auto-fill/minmax(220px,1fr) örüntüsüne çevrildi.
+// Grid, sabit grid-cols-2/3/4 yerine auto-fill/minmax(Npx,1fr) örüntüsüne çevrildi.
 // Gerekçe: MDN + CSS-Tricks + DEV Community kaynaklarının ortak standardı — kart genişliğine
 // alt sınır garantisi vermek için repeat(auto-fill, minmax(Npx, 1fr)) kullanılır (kaynaklarda
 // yaygın aralık 200-320px). Eski sabit sütun sayısı, FilterPanel sidebar'ının belirdiği `md`
 // breakpoint'iyle sütun artışının çakıştığı orta genişlikteki ekranlarda kartları aşırı daraltıyordu.
 // Bu değişiklik MenuCardImage.tsx'teki `sizes` düzeltmesiyle birlikte uygulanmalı (aynı KARAR BİLDİRİMİ).
+//
+// Değişiklik (bu session — İKİNCİ DÜZELTME, kullanıcı onayıyla):
+// minmax alt sınırı 220px'ten 150px'e düşürüldü. Gerekçe: kullanıcı mobilde sütun sayısını sordu,
+// Python ile gerçek telefon viewport genişlikleriyle (360-428px) hesaplandı — 220px alt sınırıyla
+// mobilde 2 sütun için gereken 456px hiçbir telefon genişliğinde karşılanmıyordu, sonuç 1 sütuna
+// düşüyordu (eski grid-cols-2 davranışını bozan öngörülmemiş bir yan etki). 150px, en dar telefonda
+// (360px) bile 2 sütunu garanti eder: (360-32 padding-16 gap)/2 = 156px ≥ 150px.
 
 'use client'
 
@@ -68,7 +75,7 @@ export default function MenuPage() {
             Bu filtrelerle eşleşen ürün yok — filtreleri temizlemeyi dene.
           </p>
         ) : (
-          <div className="grid flex-1 grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+          <div className="grid flex-1 grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
             {filteredItems.map((item) => (
               <MenuCard key={item.id} item={item} />
             ))}
