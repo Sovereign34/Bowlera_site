@@ -10,6 +10,13 @@
 // eşleşmesi gerektiğini belirtiyor — aksi halde tarayıcı olduğundan büyük/küçük görsel indirir.
 // Bu, page.tsx'teki grid-cols-[repeat(auto-fill,minmax(220px,1fr))] değişikliğiyle birlikte
 // uygulanmalı (aynı KARAR BİLDİRİMİ, tek problem/tek çözüm kuralı gereği iki ayrı dosya).
+//
+// Değişiklik (bu session — İKİNCİ DÜZELTME, kullanıcı onayıyla):
+// `sizes` mobilde 50vw yerine 100vw yapıldı. Gerekçe: page.tsx'te grid mobilde (sm öncesi,
+// <640px) grid-cols-1'e çevrildi — kart artık tam genişlik, görsel de tam genişlik render
+// ediliyor. sm ve üzeri auto-fill/minmax(240px,1fr) davranışı için 33vw/25vw tahmini korundu
+// (gerçek sütun sayısı içerik miktarına göre değiştiğinden kesin değer verilemiyor, Next.js'in
+// kendi örnek formatına uygun bir yaklaşık değer kullanıldı).
 
 import Image from "next/image"
 
@@ -33,7 +40,7 @@ export function MenuCardImage({
         alt={name}
         fill
         className="object-cover"
-        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
       />
       {isSuperFood && (
         <span className="absolute top-2 left-2 rounded-full bg-[linear-gradient(135deg,#8A2387_0%,#E94057_50%,#F27121_100%)] px-3 py-1 text-xs font-body font-semibold text-white">
