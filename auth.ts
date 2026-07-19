@@ -39,11 +39,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.phone = user.phone
+      if (user) token.phone = (user as { phone?: string }).phone
       return token
     },
     async session({ session, token }) {
-      if (token.phone) session.user.phone = token.phone
+      const phone = token.phone as string | undefined
+      if (phone) session.user.phone = phone
       return session
     },
   },
