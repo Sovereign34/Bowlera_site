@@ -5,6 +5,9 @@
 //          kalori zorunlu alanı ayrıca MenuCard.tsx içinde garanti edilir (bu dosyanın sorumluluğu değil)
 // Dokunma: lib/menu-filters.ts'teki filterByCategory/filterByExcludedAllergens/filterByDietTags imzaları
 //          değişirse burası da güncellenmeli. useState eklendiği için dosya 'use client' oldu (önceden server component'ti).
+//          Mobil yükseklik zinciri artık flex-1/min-h-0'a dayanıyor: <main> → sarmalayıcı div → kart kutusu.
+//          Bu zincirdeki HERHANGİ bir halka flex-col/flex-1/min-h-0'dan çıkarılırsa kart kutusu
+//          yükseklik alamaz ve snap-scroll çöker.
 //
 // Değişiklik (bu session — DÜZELTME, kullanıcı onayıyla):
 // Grid, sabit grid-cols-2/3/4 yerine auto-fill/minmax(Npx,1fr) örüntüsüne çevrildi.
@@ -32,23 +35,35 @@
 // auto-fill/minmax(240px,1fr). Masaüstünde sütun sayısının sınırsız artmasını (önceki oturumda
 // tespit edilen 7-sütun sorunu) önlemek için <main>'e max-w-7xl mx-auto eklendi.
 //
-// Değişiklik (bu session — DÖRDÜNCÜ DÜZELTME, kullanıcı onayıyla):
-// Mobilde ürün kartları arasına CSS scroll-snap eklendi. Gerekçe: kullanıcı "menü kaydırma"
-// deneyiminin kötü olduğunu belirtti — istenen davranış, TikTok/Instagram Reels tarzı, her
-// kartın kaydırma bittiğinde dikeyde viewport'u dolduracak şekilde "yakalanması". Standart
-// CSS scroll-snap-type/scroll-snap-align API'si kullanıldı (hack değil).
-// Uygulama seçimi (KARAR BİLDİRİMİ ile kullanıcıya sunulan 2 seçenekten (b) onaylandı):
-// app/layout.tsx'e dokunmadan (o dosya elimde yok, Kural #2), SADECE bu dosyadaki grid
-// wrapper'ı kendi yüksekliği tanımlı, kendi kaydırmasına sahip bir "nested scroll" kutusuna
-// çevrildi (h-[calc(100vh-4rem)] overflow-y-auto snap-y snap-mandatory). Her kart auto-rows
-// ile aynı yüksekliğe (viewport - header) sahip bir satıra yerleştirilip flex ile dikeyde
-// ortalandı, snap-start ile "durak" noktası oldu.
-// ⚠️ ONAY BEKLEYEN VARSAYIM: 4rem (64px) değeri, önceki oturumlarda Header.tsx'in h-16 (64px)
-// olduğu doğrulanmasına dayanıyor. Header sabit/sticky konumdaysa bu doğru offset'tir; değilse
-// (normal akışta ise) değer 0 olmalı — canlıda görsel olarak doğrulanmalı, kesinlik garantisi
-// verilmiyor.
-// Sadece mobilde (sm öncesi, <640px) aktif — sm ve üzeri çoklu sütun grid'e döndüğünde snap
-// otomatik devre dışı kalıyor (tek sütunda "TikTok" hissi anlamlı, çoklu sütunda değil).
+// Değişiklik (bu session — DÖRDÜNCÜ DÜZELTME, kullanıcı onayıyla) — SONRADAN HATALI ÇIKTI, bkz. BEŞİNCİ DÜZELTME:
+// Mobilde ürün kartları arasına CSS scroll-snap eklendi. `h-[calc(100vh-4rem)]` yaklaşımı
+// SADECE Header yüksekliğini (4rem) düşüyordu, CategoryNav/h1/FilterPanel'in kendi render
+// yüksekliklerini hesaba katmıyordu — canlıda kartların üstünde/altında büyük boş alan olarak
+// ortaya çıktı (kullanıcı ekran görüntüsüyle bildirdi).
+//
+// Değişiklik (bu session — BEŞİNCİ DÜZELTME / BUGFİX, kullanıcı onayıyla):
+// ⚠️ Kural sapması tespit edildi ve düzeltildi: sabit piksel tahmini yaklaşımının doğası —
+// her yeni kardeş eleman (CategoryNav, h1, FilterPanel) ayrı bir tahmin gerektiriyordu, kırılgandı.
+// Çözüm: sabit calc() hesabı TERK EDİLDİ, flexbox'un "kalan alanı otomatik doldurma" mantığına
+// geçildi. <main> artık h-[calc(100dvh-4rem)] flex flex-col (SADECE bu tek varsayım kalıyor —
+// Header'ın h-16 olduğu önceki oturumlarda doğrulanmıştı). h1, CategoryNav-sarmalayıcı ve
+// FilterPanel-sarmalayıcı shrink-0 ile doğal yüksekliklerini koruyor (CategoryNav.tsx/
+// FilterPanel.tsx dosyalarının kendisine dokunulmadı — Kural #5). Kart kutusu flex-1 min-h-0
+// ile GERÇEKTE kalan alanı dolduruyor — kardeş elemanların yüksekliği ne olursa olsun doğru
+// çalışır, ikinci bir sabit piksel tahmini eklenmedi.
+// 100vh yerine 100dvh kullanıldı (mobil tarayıcı adres çubuğu kayması `100vh`'de hatalı boşluk
+// yaratabiliyor, `100dvh` gerçek görünür alanı yansıtır).
+// Grid yerine flex flex-col'a geçildi (grid'in auto-rows hesabı da aynı sabit-tahmin sorununu
+// taşıyordu) — her kart artık `h-full shrink-0` ile kutunun tam yüksekliğini alıyor (yüzde
+// yükseklik, ancak kart kutusunun kendisi definite height aldığı için — flex-1 min-h-0 zinciri
+// sayesinde — çalışır).
+// Kullanıcı ayrıca snap-scroll GEÇİŞİNİN düzgün/kesintisiz olmasını istedi: her karta
+// `[scroll-snap-stop:always]` eklendi (hızlı "flick" kaydırmalarda bir kartın atlanmasını
+// engeller — her kart tek tek "yakalanır"), kart kutusuna `scroll-smooth` eklendi. İkisi de
+// `motion-reduce:` varyantıyla eşleştirildi (`motion-reduce:scroll-auto`) — YASAK LİSTE
+// "prefers-reduced-motion kontrolü olmadan animasyon yaz" kuralı gereği.
+// Sadece mobilde (sm öncesi, <640px) aktif — sm ve üzeri masaüstü grid'e döndüğünde tüm bu
+// sınıflar (flex/height/snap/scroll-smooth) sm: varyantlarıyla sıfırlanıyor.
 
 'use client'
 
@@ -86,29 +101,33 @@ export default function MenuPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="mb-6 font-heading text-3xl text-olive-deep">Menü</h1>
+    <main className="mx-auto flex h-[calc(100dvh-4rem)] max-w-7xl flex-col overflow-hidden px-4 py-8 sm:h-auto sm:overflow-visible">
+      <h1 className="mb-6 shrink-0 font-heading text-3xl text-olive-deep">Menü</h1>
 
-      <CategoryNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <div className="shrink-0">
+        <CategoryNav activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
 
-      <div className="mt-6 flex flex-col gap-6 md:flex-row">
-        <FilterPanel
-          excludedAllergens={excludedAllergens}
-          onExcludedAllergensChange={setExcludedAllergens}
-          selectedDietTags={selectedDietTags}
-          onDietTagsChange={setSelectedDietTags}
-        />
+      <div className="mt-6 flex min-h-0 flex-1 flex-col gap-6 sm:h-auto sm:min-h-0 sm:flex-none md:flex-row">
+        <div className="shrink-0 sm:shrink">
+          <FilterPanel
+            excludedAllergens={excludedAllergens}
+            onExcludedAllergensChange={setExcludedAllergens}
+            selectedDietTags={selectedDietTags}
+            onDietTagsChange={setSelectedDietTags}
+          />
+        </div>
 
         {filteredItems.length === 0 ? (
           <p className="flex-1 py-12 text-center text-charcoal/70">
             Bu filtrelerle eşleşen ürün yok — filtreleri temizlemeyi dene.
           </p>
         ) : (
-          <div className="grid flex-1 grid-cols-1 auto-rows-[calc(100vh-4rem)] gap-4 h-[calc(100vh-4rem)] overflow-y-auto snap-y snap-mandatory sm:h-auto sm:auto-rows-auto sm:overflow-visible sm:snap-none sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto scroll-smooth motion-reduce:scroll-auto snap-y snap-mandatory sm:h-auto sm:min-h-0 sm:flex-none sm:snap-none sm:overflow-visible sm:grid sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
             {filteredItems.map((item) => (
               <div
                 key={item.id}
-                className="flex h-full snap-start items-center justify-center sm:h-auto sm:block"
+                className="flex h-full w-full shrink-0 snap-start [scroll-snap-stop:always] items-center justify-center sm:h-auto sm:w-auto sm:shrink"
               >
                 <MenuCard item={item} />
               </div>
