@@ -5,6 +5,14 @@
 //          kalori zorunlu alanı ayrıca MenuCard.tsx içinde garanti edilir (bu dosyanın sorumluluğu değil)
 // Dokunma: lib/menu-filters.ts'teki filterByCategory/filterByExcludedAllergens/filterByDietTags imzaları
 //          değişirse burası da güncellenmeli. useState eklendiği için dosya 'use client' oldu (önceden server component'ti).
+//
+// Değişiklik (bu session — DÜZELTME, kullanıcı onayıyla):
+// Grid, sabit grid-cols-2/3/4 yerine auto-fill/minmax(220px,1fr) örüntüsüne çevrildi.
+// Gerekçe: MDN + CSS-Tricks + DEV Community kaynaklarının ortak standardı — kart genişliğine
+// alt sınır garantisi vermek için repeat(auto-fill, minmax(Npx, 1fr)) kullanılır (kaynaklarda
+// yaygın aralık 200-320px). Eski sabit sütun sayısı, FilterPanel sidebar'ının belirdiği `md`
+// breakpoint'iyle sütun artışının çakıştığı orta genişlikteki ekranlarda kartları aşırı daraltıyordu.
+// Bu değişiklik MenuCardImage.tsx'teki `sizes` düzeltmesiyle birlikte uygulanmalı (aynı KARAR BİLDİRİMİ).
 
 'use client'
 
@@ -60,7 +68,7 @@ export default function MenuPage() {
             Bu filtrelerle eşleşen ürün yok — filtreleri temizlemeyi dene.
           </p>
         ) : (
-          <div className="grid flex-1 grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid flex-1 grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
             {filteredItems.map((item) => (
               <MenuCard key={item.id} item={item} />
             ))}
