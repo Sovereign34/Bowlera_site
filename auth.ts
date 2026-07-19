@@ -28,9 +28,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const existing = await db.select().from(users).where(eq(users.phone, phone)).limit(1)
 
         if (existing.length === 0) {
-          await db.insert(users).values({ phone, verifiedAt: new Date().toISOString() })
+          await db.insert(users).values({ phone, verifiedAt: new Date() })
         } else {
-          await db.update(users).set({ verifiedAt: new Date().toISOString() }).where(eq(users.phone, phone))
+          await db.update(users).set({ verifiedAt: new Date() }).where(eq(users.phone, phone))
         }
 
         return { id: phone, phone }
