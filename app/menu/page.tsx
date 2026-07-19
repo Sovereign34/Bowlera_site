@@ -29,11 +29,10 @@
 // Stagger, satır başına `index % 6` ile sınırlandı — büyük gridlerde gecikmenin absürt uzamasını
 // önlemek için (her satır kendi içinde 0/0.06/0.12.../0.30sn gecikmeyle sırayla beliriyor).
 //
-// Değişiklik (BU SESSION — DÜZELTME, kullanıcı onayıyla, "animasyon belirginleşmeli" talebi):
-// Mesafe/ölçek değerleri büyütüldü — `y: 24→40`, `scale: 0.96→0.92`, süre `0.5s→0.6s` — canlıda
-// fark edilir olması için. Hâlâ SADECE `opacity`+`transform` (§6.2 kural 2 korunuyor).
-// `useReducedMotion()` aktifken scale/y/delay yine 0'a/1'e sabitleniyor (§6.2 kural 1 korunuyor).
-// Grid/height/FilterPanel yapısına DOKUNULMADI (önceki kırılmaların kaynağı olan kısım bu değişiklikte yok).
+// Değişiklik (BU SESSION — İKİNCİ DÜZELTME, kullanıcı onayıyla, "biraz daha artırmalısın" talebi):
+// Değerler tekrar büyütüldü — `y: 40→64`, `scale: 0.92→0.85`, süre `0.6s→0.75s`. Hâlâ SADECE
+// `opacity`+`transform` (§6.2 kural 2 korunuyor). `useReducedMotion()` aktifken hepsi 0'a/1'e
+// sabitleniyor (§6.2 kural 1 korunuyor). Grid/height/FilterPanel yapısına DOKUNULMADI.
 
 'use client'
 
@@ -67,8 +66,8 @@ export default function MenuPage() {
   const cardVariants = {
     hidden: {
       opacity: 0,
-      y: shouldReduceMotion ? 0 : 40,
-      scale: shouldReduceMotion ? 1 : 0.92,
+      y: shouldReduceMotion ? 0 : 64,
+      scale: shouldReduceMotion ? 1 : 0.85,
     },
     visible: {
       opacity: 1,
@@ -81,9 +80,9 @@ export default function MenuPage() {
   // (6, grid'in en geniş breakpoint'inde muhtemel sütun sayısını aşacak şekilde güvenli bir üst sınır;
   // gerçek sütun sayısı auto-fill/minmax olduğu için build-time'da bilinmiyor, bu yüzden sabit tutuldu.)
   const getCardTransition = (index: number) => ({
-    duration: shouldReduceMotion ? 0 : 0.6,
+    duration: shouldReduceMotion ? 0 : 0.75,
     ease: 'easeOut' as const,
-    delay: shouldReduceMotion ? 0 : Math.min(index % 6, 5) * 0.06,
+    delay: shouldReduceMotion ? 0 : Math.min(index % 6, 5) * 0.08,
   })
 
   if (items.length === 0) {
