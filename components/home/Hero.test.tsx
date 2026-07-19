@@ -1,6 +1,11 @@
 // components/home/Hero.test.tsx
 // Amaç:    Hero'nun CTA hedeflerini ve placeholder görsel erişilebilirliğini doğrular
 // Kapsam:  Happy path + edge (CTA href doğru mu) + failure (görsel yokken alt/aria boş kalmıyor)
+//
+// Düzeltme (bu session): "Kâseni Yarat" href beklentisi '/menu/customize' → 
+// '/menu/customize/build-your-own-kasem' olarak güncellendi. Hero.tsx'in niyet yorumuna göre
+// bu CTA kasıtlı olarak "Benim Kâsem" ürün id'sine yönlendiriliyor (Karar #7'nin geri alınması,
+// önceki bir oturumda yapılmış ama test o zaman güncellenmemiş kalmış).
 
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
@@ -13,9 +18,12 @@ describe('Hero', () => {
     expect(screen.getByText('Menüyü Keşfet')).toBeInTheDocument()
   })
 
-  it('edge — "Kâseni Yarat" customizer rotasına, "Menüyü Keşfet" menü rotasına gider', () => {
+  it('edge — "Kâseni Yarat" build-your-own-kasem customizer rotasına, "Menüyü Keşfet" menü rotasına gider', () => {
     render(<Hero />)
-    expect(screen.getByText('Kâseni Yarat').closest('a')).toHaveAttribute('href', '/menu/customize')
+    expect(screen.getByText('Kâseni Yarat').closest('a')).toHaveAttribute(
+      'href',
+      '/menu/customize/build-your-own-kasem'
+    )
     expect(screen.getByText('Menüyü Keşfet').closest('a')).toHaveAttribute('href', '/menu')
   })
 
