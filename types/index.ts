@@ -1,13 +1,13 @@
 // types/index.ts
 // Amaç:    BowlItem/CartItem/CustomizerSelection ve customizer bileşen veri modelini tek yerden tanımlar
-// Bağlı:   menu-data.json, lib/customizer-data.ts, MenuCard, useCartStore, useCustomizerStore
-// Risk:    Tip burada bozulursa menü kartı, sepet, customizer state ve fiyat hesabı aynı anda kırılır
+// Bağlı:   menu-data.json, lib/customizer-data.ts, MenuCard, useCartStore, useCustomizerStore,
+//          lib/db/schema.ts (AuthenticatedUser artık DB'deki users tablosuyla kısmen örtüşüyor)
+// Risk:    Tip burada bozulursa menü kartı, sepet, customizer state, fiyat hesabı ve auth aynı anda kırılır
 // Dokunma: ARCHITECTURE.md §3 (Veri Modeli) + CUSTOMIZER_SPEC.md §3.1 — değişiklik önce orada onaylanmalı
 //
-// Değişiklik (bu session — DÜZELTME + ekleme, bkz. docs/schema-changes/
-// 20260718070000_cartitem_unitcalories_ve_fulfillment_channel.md):
-// 1. CartItem.unitCalorie7s → unitCalories (yazım hatası düzeltildi)
-// 2. FulfillmentChannel tipi eklendi — sepet/store seviyesinde, ürün bazlı DEĞİL
+// Değişiklik (bu session — Karar #20, DB kararının kısmi revizyonu):
+// AuthenticatedUser'a `address` alanı eklendi. Artık DB'de (Neon, lib/db/schema.ts → users
+// tablosu) kalıcı saklanıyor — Karar #19'daki "DB tamamen ertelendi" notu bu kapsamda güncellendi.
 
 export type BowlItem = {
   id: string
@@ -91,4 +91,17 @@ export type CartItem = {
   quantity: number
   unitPrice: number
   unitCalories: number
+}
+
+// --- Auth — INTEGRATIONS.md §5, ARCHITECTURE.md §2.7 (Karar #17/#19/#20) ---
+
+export type AuthenticatedUser = {
+  phone: string // kimlik anahtarı — Karar #17, "1 numara = 1 hesap"
+  verifiedAt: string // ISO timestamp — son OTP doğrulama zamanı
+  // Karar #20: DB (Neon, lib/db/schema.ts) artık bu alanları KALICI saklıyor.
+  // JWT session bu değerleri taşımaya devam eder (performans, ekstra DB sorgusu önler)
+  // ama artık tek kaynak değil — DB güncellenince JWT bir sonraki girişte senkronlanır.
+  address?: string
+  displayName?: string
+  loyaltyPoints?: number // sadakat programı — mekanik henüz netleşmedi (Açık Sorun #30)
 }
