@@ -1,59 +1,33 @@
 // app/menu/page.tsx
 // Amaç:    Menü sayfası — kategori sekmeleri (CategoryNav) + alerjen/diyet filtreleri (FilterPanel) + MenuCard grid
-// Bağlı:   components/menu/{CategoryNav,FilterPanel,MenuCard,MenuCardImage}.tsx, lib/menu-filters.ts, lib/menu-data.json
+// Bağlı:   components/menu/{CategoryNav,FilterPanel,MenuCard}.tsx, lib/menu-filters.ts, lib/menu-data.json, framer-motion
 // Risk:    Filtre state'i yanlış zincirlenirse kullanıcı olması gerekenden az/çok ürün görür;
 //          kalori zorunlu alanı ayrıca MenuCard.tsx içinde garanti edilir (bu dosyanın sorumluluğu değil)
 // Dokunma: lib/menu-filters.ts'teki filterByCategory/filterByExcludedAllergens/filterByDietTags imzaları
-//          değişirse burası da güncellenmeli. useState eklendiği için dosya 'use client' oldu (önceden server component'ti).
-//          Mobil yükseklik zinciri flex-1/min-h-0'a dayanıyor: <main> → sarmalayıcı div → kart kutusu.
-//          Bu zincirdeki HERHANGİ bir halka flex-col/flex-1/min-h-0'dan çıkarılırsa kart kutusu
-//          yükseklik alamaz ve snap-scroll çöker. Kart sarmalayıcısı `flex-col` OLMAK ZORUNDA —
-//          `flex-row` (varsayılan) + `justify-center` kombinasyonu kartı yatayda sıfıra küçültür
-//          (bkz. aşağıdaki ALTINCI DÜZELTME notu, bu tam olarak canlıda yaşanan hataydı).
+//          değişirse burası da güncellenmeli.
 //
-// Değişiklik (bu session — DÜZELTME, kullanıcı onayıyla):
-// Grid, sabit grid-cols-2/3/4 yerine auto-fill/minmax(Npx,1fr) örüntüsüne çevrildi.
+// Değişiklik (bu session — DÜZELTME, kullanıcı onayıyla): grid-cols sabitten auto-fill/minmax'e çevrildi.
+// Değişiklik (bu session — İKİNCİ DÜZELTME, kullanıcı onayıyla): minmax alt sınırı 150px.
+// Değişiklik (bu session — ÜÇÜNCÜ DÜZELTME, kullanıcı onayıyla): mobilde tek sütun, tam genişlik kart.
 //
-// Değişiklik (bu session — İKİNCİ DÜZELTME, kullanıcı onayıyla):
-// minmax alt sınırı 220px'ten 150px'e düşürüldü — mobilde 2 sütun garantisi için.
+// ⚠️ MOBİL SNAP-SCROLL DENEMESİ 3 KEZ CANLIDA KIRILDI, TERK EDİLDİ — bkz. git geçmişi / önceki
+// session_log bloğu. Kök neden: FilterPanel'in (uzun, 9 checkbox) inline gösterimiyle "sayfa tam
+// viewport'a sığsın" mimarisi birlikte çalışmıyordu. Yeniden gündeme gelmeden önce FilterPanel'in
+// katlanabilir/drawer yapılması gibi bir ürün kararı gerekiyor.
 //
-// Değişiklik (bu session — ÜÇÜNCÜ DÜZELTME, kullanıcı onayıyla, araştırmayla doğrulandı):
-// Mobilde 2 sütun yerine 1 sütun (tam genişlik kart) yapıldı — Uber Eats/DoorDash örüntüsü +
-// yüksek kaliteli menü fotoğrafının sipariş oranını artırdığı araştırma bulgusu. `sm:` (640px)
-// öncesi grid-cols-1, sonrasında auto-fill/minmax(240px,1fr). <main>'e max-w-7xl mx-auto eklendi.
-//
-// Değişiklik (bu session — DÖRDÜNCÜ DÜZELTME) — HATALI ÇIKTI, geri alındı:
-// Sabit `h-[calc(100vh-4rem)]` — CategoryNav/h1/FilterPanel yüksekliği hesaba katılmadı,
-// kartların üstünde/altında boşluk oluştu.
-//
-// Değişiklik (bu session — BEŞİNCİ DÜZELTME) — HATALI ÇIKTI, geri alındı:
-// flex-1/min-h-0 zincirine geçildi (doğru yaklaşım) ama kart sarmalayıcısı `MenuCard.tsx`/
-// `MenuCardImage.tsx` HİÇ GÖRÜLMEDEN `items-center justify-center` (flex-row varsayılanıyla)
-// yazıldı — AGENT.md Kural #2 ihlali. Sonuç: `justify-center` ana eksende (yatay, çünkü
-// flex-row) kartı içerik genişliğine küçültüp ortaladı, kart görünmez oldu (canlıda "Kase"
-// yazısı + iki ince dikey şerit olarak görüldü). Site canlıda bozulduğu için kullanıcı onayı
-// beklenmeden ÜÇÜNCÜ düzeltme sonrası bilinen-iyi hale (sade grid, snap yok) acil geri alındı.
-//
-// Değişiklik (bu session — ALTINCI DÜZELTME, `MenuCard.tsx` + `MenuCardImage.tsx` görülüp
-// doğrulandıktan SONRA, kullanıcı onayıyla):
-// BEŞİNCİ düzeltmenin flex-1/min-h-0 mantığı doğruydu, sadece kart sarmalayıcısının ekseni
-// yanlıştı. Düzeltme: kart sarmalayıcısına `flex-col` eklendi (`items-center` KALDIRILDI).
-// Artık çapraz eksen (yatay) varsayılan `items-stretch` ile kart tam genişliği otomatik alıyor —
-// bu da `MenuCardImage.tsx`'teki `aspect-square w-full`'un ebeveyn genişliğinden doğru şekilde
-// beslenmesini sağlıyor. Ana eksen (dikey) `justify-center` ile kart, snap kutusunun içinde
-// dikeyde ortalanıyor (kart kendi doğal yüksekliğinde kalır, DoorDash/Reels tarzı "bir kart =
-// bir ekran" hissi böyle oluşuyor). `<main>` h-[calc(100dvh-4rem)] flex flex-col (SADECE Header
-// yüksekliği — 4rem — varsayımı, önceki oturumlarda doğrulandı) — h1/CategoryNav-sarmalayıcı/
-// FilterPanel-sarmalayıcı shrink-0, kart kutusu flex-1 min-h-0 ile kalan alanı dolduruyor.
-// 100vh yerine 100dvh (mobil adres çubuğu kaymasına karşı). Her karta `[scroll-snap-stop:always]`
-// (hızlı flick'te kart atlanmasın diye) ve kart kutusuna `scroll-smooth motion-reduce:scroll-auto`
-// (YASAK LİSTE — prefers-reduced-motion kontrolsüz animasyon yasağı gereği) eklendi.
-// Sadece mobilde (sm öncesi, <640px) aktif — sm ve üzeri tüm bu sınıflar sm: varyantlarıyla
-// sıfırlanıp eski çoklu-sütun grid'e dönülüyor.
+// Değişiklik (bu session — YEDİNCİ DÜZELTME / ÖZELLİK, DESIGN_SYSTEM.md §6.1 görülüp kullanıcı
+// onayıyla): Snap-scroll'un yerine DESIGN_SYSTEM.md §6.1'deki "Bölüm başlıkları/kartlar
+// (scroll reveal)" satırı birebir uygulandı — kart, %10'u viewport'a girince alttan fade+slide
+// ile beliriyor, 500ms `ease-out`, TEK SEFERLİK (`viewport={{ once: true }}`, DESIGN_SYSTEM §6.2
+// kuralı). Sadece `opacity`+`transform` animasyonlu (width/height/top yok → CLS riski yok,
+// §6.2 kural 2). `useReducedMotion()` ile `prefers-reduced-motion` kontrolü yapılıyor — aktifse
+// kayma mesafesi 0'a, süre 0'a iniyor (§6.2 kural 1). Yükseklik/flex/snap mimarisine
+// DOKUNULMADI — önceki 3 kırılmanın kaynağı olan kısım bu çözümde hiç yok.
 
 'use client'
 
 import { useState, useMemo } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { MenuCard } from '@/components/menu/MenuCard'
 import { CategoryNav } from '@/components/menu/CategoryNav'
 import { FilterPanel } from '@/components/menu/FilterPanel'
@@ -71,12 +45,19 @@ export default function MenuPage() {
   const [activeTab, setActiveTab] = useState<CategoryTabId>('tumu')
   const [excludedAllergens, setExcludedAllergens] = useState<string[]>([])
   const [selectedDietTags, setSelectedDietTags] = useState<string[]>([])
+  const shouldReduceMotion = useReducedMotion()
 
   const filteredItems = useMemo(() => {
     const byCategory = filterByCategory(items, activeTab)
     const byAllergen = filterByExcludedAllergens(byCategory, excludedAllergens)
     return filterByDietTags(byAllergen, selectedDietTags)
   }, [items, activeTab, excludedAllergens, selectedDietTags])
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 24 },
+    visible: { opacity: 1, y: 0 },
+  }
+  const cardTransition = { duration: shouldReduceMotion ? 0 : 0.5, ease: 'easeOut' as const }
 
   if (items.length === 0) {
     return (
@@ -87,36 +68,36 @@ export default function MenuPage() {
   }
 
   return (
-    <main className="mx-auto flex h-[calc(100dvh-4rem)] max-w-7xl flex-col overflow-hidden px-4 py-8 sm:h-auto sm:overflow-visible">
-      <h1 className="mb-6 shrink-0 font-heading text-3xl text-olive-deep">Menü</h1>
+    <main className="mx-auto max-w-7xl px-4 py-8">
+      <h1 className="mb-6 font-heading text-3xl text-olive-deep">Menü</h1>
 
-      <div className="shrink-0">
-        <CategoryNav activeTab={activeTab} onTabChange={setActiveTab} />
-      </div>
+      <CategoryNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="mt-6 flex min-h-0 flex-1 flex-col gap-6 sm:h-auto sm:min-h-0 sm:flex-none md:flex-row">
-        <div className="shrink-0 sm:shrink">
-          <FilterPanel
-            excludedAllergens={excludedAllergens}
-            onExcludedAllergensChange={setExcludedAllergens}
-            selectedDietTags={selectedDietTags}
-            onDietTagsChange={setSelectedDietTags}
-          />
-        </div>
+      <div className="mt-6 flex flex-col gap-6 md:flex-row">
+        <FilterPanel
+          excludedAllergens={excludedAllergens}
+          onExcludedAllergensChange={setExcludedAllergens}
+          selectedDietTags={selectedDietTags}
+          onDietTagsChange={setSelectedDietTags}
+        />
 
         {filteredItems.length === 0 ? (
           <p className="flex-1 py-12 text-center text-charcoal/70">
             Bu filtrelerle eşleşen ürün yok — filtreleri temizlemeyi dene.
           </p>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto scroll-smooth motion-reduce:scroll-auto snap-y snap-mandatory sm:h-auto sm:min-h-0 sm:flex-none sm:snap-none sm:overflow-visible sm:grid sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
+          <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
             {filteredItems.map((item) => (
-              <div
+              <motion.div
                 key={item.id}
-                className="flex h-full w-full shrink-0 flex-col justify-center snap-start [scroll-snap-stop:always] sm:h-auto sm:w-auto sm:shrink sm:block"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+                variants={cardVariants}
+                transition={cardTransition}
               >
                 <MenuCard item={item} />
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
