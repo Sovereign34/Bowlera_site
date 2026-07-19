@@ -4,12 +4,16 @@
 // Risk:    Toplam yanlış hesaplanırsa veya removeFromCart hatalı satır silerse kullanıcı yanlış sipariş verir
 // Dokunma: types/index.ts (CartItem) — bowlItem null olabilir (customizer ürünleri), bu durumda "Özel Kâse" gösterilir
 //
-// Değişiklik (bu session — ekleme): FulfillmentChannelSelector eklendi, sepetin en üstünde,
-// başlığın hemen altında — cart boş olsa bile gösterilir (kullanıcı ürün eklemeden önce de
-// kanalı seçebilsin diye, bkz. konuşma kararı).
+// Değişiklik (bu session — bugfix): Header.tsx'teki `backdrop-blur` sınıfı <header>'ı
+// `position:fixed` için yeni bir containing block yapıyordu — CartDrawer viewport yerine
+// header'ın küçük kutusuna sıkışıp içeriği sayfaya taşıyordu (Hero ile görsel çakışma).
+// Çözüm: CartDrawer artık React Portal ile doğrudan document.body'ye render ediliyor,
+// Header'ın stacking context'inden tamamen bağımsız. Header.tsx'e dokunulmadı.
 
 "use client"
 
+import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { useCartStore } from "@/store/useCartStore"
 import FulfillmentChannelSelector from "./FulfillmentChannelSelector"
 
@@ -26,11 +30,17 @@ export default function CartDrawer({ isOpen, onClose }: Props) {
   const cart = useCartStore((state) => state.cart)
   const removeFromCart = useCartStore((state) => state.removeFromCart)
 
-  if (!isOpen) return null
+  // Portal hedefi (document.body) yalnızca client'ta mevcut — SSR'da render etmiyoruz.
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isOpen || !isMounted) return null
 
   const total = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
 
-  return (
+  const drawer = (
     <div className="fixed inset-0 z-50 flex justify-end bg-charcoal/40" onClick={onClose}>
       <div
         className="h-full w-full max-w-sm bg-cream p-4 shadow-xl"
@@ -83,4 +93,6 @@ export default function CartDrawer({ isOpen, onClose }: Props) {
       </div>
     </div>
   )
+
+  return createPortal(drawer, document.body)
 }
