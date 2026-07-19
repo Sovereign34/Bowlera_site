@@ -31,6 +31,24 @@
 // sıkışık fotoğraf bu etkiyi zayıflatıyor. Uygulama: `sm:` (640px) öncesi grid-cols-1, sonrasında
 // auto-fill/minmax(240px,1fr). Masaüstünde sütun sayısının sınırsız artmasını (önceki oturumda
 // tespit edilen 7-sütun sorunu) önlemek için <main>'e max-w-7xl mx-auto eklendi.
+//
+// Değişiklik (bu session — DÖRDÜNCÜ DÜZELTME, kullanıcı onayıyla):
+// Mobilde ürün kartları arasına CSS scroll-snap eklendi. Gerekçe: kullanıcı "menü kaydırma"
+// deneyiminin kötü olduğunu belirtti — istenen davranış, TikTok/Instagram Reels tarzı, her
+// kartın kaydırma bittiğinde dikeyde viewport'u dolduracak şekilde "yakalanması". Standart
+// CSS scroll-snap-type/scroll-snap-align API'si kullanıldı (hack değil).
+// Uygulama seçimi (KARAR BİLDİRİMİ ile kullanıcıya sunulan 2 seçenekten (b) onaylandı):
+// app/layout.tsx'e dokunmadan (o dosya elimde yok, Kural #2), SADECE bu dosyadaki grid
+// wrapper'ı kendi yüksekliği tanımlı, kendi kaydırmasına sahip bir "nested scroll" kutusuna
+// çevrildi (h-[calc(100vh-4rem)] overflow-y-auto snap-y snap-mandatory). Her kart auto-rows
+// ile aynı yüksekliğe (viewport - header) sahip bir satıra yerleştirilip flex ile dikeyde
+// ortalandı, snap-start ile "durak" noktası oldu.
+// ⚠️ ONAY BEKLEYEN VARSAYIM: 4rem (64px) değeri, önceki oturumlarda Header.tsx'in h-16 (64px)
+// olduğu doğrulanmasına dayanıyor. Header sabit/sticky konumdaysa bu doğru offset'tir; değilse
+// (normal akışta ise) değer 0 olmalı — canlıda görsel olarak doğrulanmalı, kesinlik garantisi
+// verilmiyor.
+// Sadece mobilde (sm öncesi, <640px) aktif — sm ve üzeri çoklu sütun grid'e döndüğünde snap
+// otomatik devre dışı kalıyor (tek sütunda "TikTok" hissi anlamlı, çoklu sütunda değil).
 
 'use client'
 
@@ -86,9 +104,14 @@ export default function MenuPage() {
             Bu filtrelerle eşleşen ürün yok — filtreleri temizlemeyi dene.
           </p>
         ) : (
-          <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
+          <div className="grid flex-1 grid-cols-1 auto-rows-[calc(100vh-4rem)] gap-4 h-[calc(100vh-4rem)] overflow-y-auto snap-y snap-mandatory sm:h-auto sm:auto-rows-auto sm:overflow-visible sm:snap-none sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
             {filteredItems.map((item) => (
-              <MenuCard key={item.id} item={item} />
+              <div
+                key={item.id}
+                className="flex h-full snap-start items-center justify-center sm:h-auto sm:block"
+              >
+                <MenuCard item={item} />
+              </div>
             ))}
           </div>
         )}
