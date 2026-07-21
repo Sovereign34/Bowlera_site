@@ -2,8 +2,9 @@
 // Amaç:    "Kâseni Yarat" bileşen kataloğunun tek veri kaynağı (Base/Main/Garden/Signature Flavor/Finish/Extras)
 // Bağlı:   store/useCustomizerStore.ts, lib/customizer-pricing.ts
 // Risk:    Buradaki değerler yanlış/eksikse fiyat ve kalori toplamı yanlış hesaplanır — müşteriye yanlış bilgi gider
-// Dokunma: CUSTOMIZER_SPEC.md §2 (Adım Tanımları) — ⚠️ isimler Türkçeleştirildi, CUSTOMIZER_SPEC.md'deki
-//          liste bu değişiklikle senkronize DEĞİL — orası ayrıca güncellenmeli (açık görev)
+// Dokunma: CUSTOMIZER_SPEC.md §2 / §2.1 (Adım Tanımları + Plant-Based Protein alt-varyant mekanizması) —
+//          ⚠️ isimler Türkçeleştirildi, senkron. "plant-based-protein" main'i variants[] ile genişletilebilir
+//          (yeni bir 3. varyant eklemek için sadece variants dizisine yeni obje eklenir, id/name/price/calories/protein).
 //
 // ⚠️⚠️⚠️ TEST VERİSİ — GERÇEK DEĞİL ⚠️⚠️⚠️
 // Bu dosyadaki tüm fiyat/kalori/protein değerleri SADECE görsel/layout testi içindir.
@@ -11,10 +12,11 @@
 // (AGENT.md Kural #4 + BSC-5 gereği kullanıcıdan gelecek) değiştirilmesi ZORUNLU.
 // Bkz. SESSION_INDEX.md Açık Sorun #17, #24.
 //
-// Değişiklik (bu session — DÜZELTME): Tüm "name" alanları İngilizceden Türkçeye çevrildi
-// (Karar #2'nin geri alınması). "id" alanları BİLİNÇLİ OLARAK değiştirilmedi — store/pricing/
-// selection mantığı bu id'lere referans veriyor, id değişikliği ayrı bir şema değişikliği
-// gerektirir ve bu görevin kapsamı dışında.
+// Değişiklik (bu session — v1.2): "plant-based-protein" main'i eklendi, variants: [] alanı ile
+// (chickpea-simmered / Soslu Nohut, mexican-beans / Meksika Fasulyesi). signatureFlavors'a
+// compatibleFlavorIds referansı main objesinde tutulur (flavor tarafında değil) — bu, yeni bir
+// Main eklendiğinde flavor listesinin tekrar tekrar düzenlenmesini önler (tek kaynak main'de).
+// Bkz. CUSTOMIZER_SPEC.md §2.1, SESSION_INDEX.md Karar #11 / Açık Sorun #22.
 
 import type { CustomizerCatalog } from "@/types"
 
@@ -35,6 +37,24 @@ export const customizerCatalog: CustomizerCatalog = {
     { id: "shrimp", name: "Karides", price: 35, calories: 180, protein: 28 },
     { id: "salmon", name: "Somon", price: 45, calories: 280, protein: 30 },
     { id: "tofu", name: "Tofu", price: 0, calories: 190, protein: 18 },
+    // 🆕 v1.2 — Plant-Based Protein: tek Main kartı, 2 alt-varyant.
+    // ⚠️ TEST VERİSİ (variants içindeki price/calories/protein dahil).
+    // "variants" alanı SADECE bu main'de dolu — diğer 7 Main için undefined,
+    // getTotals()/UI kodu bu alanın varlığına göre dallanır (CUSTOMIZER_SPEC.md §4).
+    {
+      id: "plant-based-protein",
+      name: "Bitkisel Protein",
+      price: 0,          // fallback — variants[0] öncelikli, bkz. §3.4/§4
+      calories: 230,      // fallback — variants[0] ile aynı (Soslu Nohut)
+      protein: 10,        // fallback — variants[0] ile aynı
+      variants: [
+        { id: "chickpea-simmered", name: "Soslu Nohut", price: 0, calories: 230, protein: 10 },
+        { id: "mexican-beans", name: "Meksika Fasulyesi", price: 0, calories: 210, protein: 9 },
+      ],
+      // Signature Flavor adımında bu Main seçiliyse SADECE bu ID'ler gösterilir
+      // (CUSTOMIZER_SPEC.md §2.1 — gurme uyumluluk gerekçesi orada).
+      compatibleFlavorIds: ["mediterranean-herb", "spicy-harissa", "lemon-garlic"],
+    },
   ],
   gardenItems: [
     { id: "cherry-tomato", name: "Çeri Domates", price: 0, calories: 15, protein: 0 },
