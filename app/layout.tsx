@@ -1,10 +1,13 @@
 // app/layout.tsx
-// Amaç:    Tüm sayfalar için ortak iskelet — font, Header/Footer
+// Amaç:    Tüm sayfalar için ortak iskelet — font, Header/Footer, oturum context'i
 // Bağlı:   Her sayfa buradan render edilir (ARCHITECTURE.md §2.1)
-// Risk:    Hatalı font/tema yüklemesi → tüm site etkilenir
+// Risk:    Hatalı font/tema yüklemesi → tüm site etkilenir.
+//          SessionProvider olmadan Header/diğer client component'ler useSession()
+//          çağıramaz — Açık Sorun #33 bu eksikliğin giderilmesidir.
 // Dokunma: DESIGN_SYSTEM.md §Tipografi kontrol et
 
 import type { Metadata } from 'next'
+import { SessionProvider } from 'next-auth/react'
 import { cormorantGaramond, nunito } from '@/lib/fonts'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
@@ -19,9 +22,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" className={`${cormorantGaramond.variable} ${nunito.variable}`}>
       <body>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        {/* SessionProvider client component'tir ama server component (RootLayout)
+            içine doğrudan render edilebilir — Next.js App Router standart pattern'i.
+            Header.tsx (ve ileride başka client bileşenler) useSession() burada okur. */}
+        <SessionProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </SessionProvider>
       </body>
     </html>
   )
