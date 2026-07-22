@@ -1,12 +1,16 @@
 // components/customizer/MobileSummaryDrawer.tsx
 // Amaç:    Mobilde ekranın altında sabit (sticky) özet çekmecesi — kapalı tek satır, açık tam özet + Sepete Ekle
-// Bağlı:   store/useCustomizerStore.ts, components/customizer/VisualPreview.tsx, AddToCartButton.tsx, lib/customizer-data.ts
+// Bağlı:   store/useCustomizerStore.ts, components/customizer/VisualPreview.tsx, AddToCartButton.tsx,
+//          lib/customizer-data.ts, lib/customizer-summary-format.ts
 // Risk:    Kullanıcı toplam fiyat/kaloriyi göremezse yanlış beklentiyle sipariş verebilir (CUSTOMIZER_SPEC.md §6)
 // Dokunma: CUSTOMIZER_SPEC.md §6 (Mobil UX) — açık/kapalı durum davranışı burada tanımlı, değiştirmeden önce oku
 //
-// NOT: lib/customizer-summary-format.ts (Oturum 3'te üretildiği bildirildi, 12 test) içeriği bu session'da
-// görülmedi. formatPrice/formatCalories burada GEÇİCİ yerel kopyadır — o dosyayla konsolide edilmeli
-// (AGENT.md Kural #5 Bağımlılık Disiplini, aynı mantık iki yerde tanımlanmamalı).
+// DÜZELTME (bu session — Açık Sorun #43): Yerel `formatPrice`/`formatCalories` kopyaları kaldırıldı,
+// `lib/customizer-summary-format.ts`'teki gerçek modül kullanılıyor. Eski yerel kopya `value > 0`
+// kontrolü yapıyordu — seçili ama 0 TL'lik bir öğede (örn. ücretsiz bir Garden seçimi) yanlışlıkla
+// "—" gösteriyordu, doğrusu "0" olmalıydı. Gerçek modül `hasSelection` bayrağına bakıyor
+// (hasAnySelection(selections)) — "seçim var mı" ile "değer sıfır mı" artık karışmıyor.
+// Not: formatMetric() ham sayı döner ("kcal" eki yok), birim etiketi burada eklendi.
 
 "use client"
 
@@ -14,16 +18,9 @@ import { useState } from "react"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { useCustomizerStore } from "@/store/useCustomizerStore"
 import { customizerCatalog } from "@/lib/customizer-data"
+import { hasAnySelection, formatMetric, formatPrice } from "@/lib/customizer-summary-format"
 import VisualPreview from "@/components/customizer/VisualPreview"
 import AddToCartButton from "@/components/customizer/AddToCartButton"
-
-function formatPrice(value: number): string {
-  return value > 0 ? `₺${value.toFixed(2)}` : "—"
-}
-
-function formatCalories(value: number): string {
-  return value > 0 ? `${Math.round(value)} kcal` : "—"
-}
 
 type Props = {
   onAddToCart?: () => void
@@ -37,6 +34,12 @@ export default function MobileSummaryDrawer({ onAddToCart }: Props) {
   const reduceMotion = useReducedMotion()
   const totals = getTotals()
   const canAddToCart = isStepValid(5)
+
+  // "Seçim var mı" (hasSelection) ile "değer sıfır mı" (0 TL/0 kcal) artık karışmıyor — #43 düzeltmesi
+  const hasSelection = hasAnySelection(selections)
+  const priceLabel = formatPrice(totals.price, hasSelection)
+  const caloriesRaw = formatMetric(totals.calories, hasSelection)
+  const caloriesLabel = caloriesRaw === "—" ? "—" : `${caloriesRaw} kcal`
 
   const base = customizerCatalog.bases.find((item) => item.id === selections.base)
   const main = customizerCatalog.mains.find((item) => item.id === selections.main)
@@ -58,7 +61,7 @@ export default function MobileSummaryDrawer({ onAddToCart }: Props) {
           className="flex w-full items-center justify-between px-4 py-3 font-body"
         >
           <span className="font-semibold text-charcoal">
-            {formatPrice(totals.price)} · {formatCalories(totals.calories)}
+            {priceLabel} · {caloriesLabel}
           </span>
           <motion.span
             animate={{ rotate: isOpen ? 180 : 0 }}
