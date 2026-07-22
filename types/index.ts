@@ -3,11 +3,19 @@
 // Bağlı:   menu-data.json, lib/customizer-data.ts, MenuCard, useCartStore, useCustomizerStore,
 //          lib/db/schema.ts (AuthenticatedUser artık DB'deki users tablosuyla kısmen örtüşüyor)
 // Risk:    Tip burada bozulursa menü kartı, sepet, customizer state, fiyat hesabı ve auth aynı anda kırılır
-// Dokunma: ARCHITECTURE.md §3 (Veri Modeli) + CUSTOMIZER_SPEC.md §3.1 — değişiklik önce orada onaylanmalı
+// Dokunma: ARCHITECTURE.md §3 (Veri Modeli) + CUSTOMIZER_SPEC.md §3.1/§3.4/§2.1 — değişiklik önce orada onaylanmalı
 //
 // Değişiklik (bu session — Karar #20, DB kararının kısmi revizyonu):
 // AuthenticatedUser'a `address` alanı eklendi. Artık DB'de (Neon, lib/db/schema.ts → users
 // tablosu) kalıcı saklanıyor — Karar #19'daki "DB tamamen ertelendi" notu bu kapsamda güncellendi.
+//
+// Değişiklik (bu session — Karar #11/Açık Sorun #22, v1.2):
+// `CustomizerMainItem` tipi eklendi (`CustomizerComponentItem`'i genişletir) — SADECE Main
+// kategorisi için `variants` (Bitkisel Protein gibi alt-varyantlı Main'ler) ve `compatibleFlavorIds`
+// (Signature Flavor filtreleme) alanlarını taşır. Diğer 4 kategori (bases/gardenItems/
+// signatureFlavors/finishItems) hâlâ düz `CustomizerComponentItem[]` — bilinçli olarak
+// genişletilmedi (Kural #5, tek problem/tek çözüm). `CustomizerSelection`'a `mainVariant`
+// eklendi — bkz. CUSTOMIZER_SPEC.md §3.1, §3.4.
 
 export type BowlItem = {
   id: string
@@ -36,6 +44,21 @@ export type CustomizerComponentItem = {
   fat?: number
 }
 
+// --- Main kategorisine özgü genişletme — CUSTOMIZER_SPEC.md §2.1, §3.4 (v1.2, Karar #11) ---
+// Şema notu: docs/schema-changes/20260722xxxxxx_customizer_main_variants_ve_flavor_filtreleme.md
+// (dosya henüz oluşturulmadı — session kapanışında CORE.md §7.4 formatına göre üretilmeli)
+
+export type CustomizerMainItem = CustomizerComponentItem & {
+  // SADECE alt-varyantlı Main'lerde (örn. "plant-based-protein") dolu.
+  // Doluysa: fiyat/kalori/protein hesaplaması mainDef.price/calories/protein DEĞİL,
+  // seçili variant'tan okunur (variants[0] fallback — bkz. CUSTOMIZER_SPEC.md §4).
+  variants?: CustomizerComponentItem[]
+  // SADECE bu Main seçiliyken Signature Flavor adımında gösterilecek flavor ID'lerini
+  // sınırlar. undefined ise davranış değişmez — tüm signatureFlavors gösterilir
+  // (geriye dönük uyumlu, opt-in filtre — bkz. CUSTOMIZER_SPEC.md §2.1).
+  compatibleFlavorIds?: string[]
+}
+
 export type CustomizerExtraOptions = {
   extraAvocado: CustomizerComponentItem
   extraSauce: CustomizerComponentItem
@@ -44,18 +67,22 @@ export type CustomizerExtraOptions = {
 
 export type CustomizerCatalog = {
   bases: CustomizerComponentItem[]
-  mains: CustomizerComponentItem[]
+  mains: CustomizerMainItem[] // 🆕 v1.2 — CustomizerComponentItem[]'den CustomizerMainItem[]'e değişti
   gardenItems: CustomizerComponentItem[]
   signatureFlavors: CustomizerComponentItem[]
   finishItems: CustomizerComponentItem[]
   extraOptions: CustomizerExtraOptions
 }
 
-// --- Customizer seçim state'i — CUSTOMIZER_SPEC.md §3.1 (v1.1, 5 adım) ---
+// --- Customizer seçim state'i — CUSTOMIZER_SPEC.md §3.1 (v1.2, 5 adım + Main alt-varyant) ---
 
 export type CustomizerSelection = {
   base: string | null
   main: string | null
+  // 🆕 v1.2 — SADECE main bir CustomizerMainItem.variants taşıyorsa (örn. plant-based-protein)
+  // anlamlı; diğer Main'ler seçiliyken her zaman null kalır. nextStep() otomatik atama
+  // yapar, kullanıcı seçmeden ilerlerse null KALMAZ (bkz. CUSTOMIZER_SPEC.md §3.4).
+  mainVariant: string | null
   mainPortion: "single" | "double"
   garden: string[] // max 4 ücretsiz (avokado hariç), sonrası ücretli
   signatureFlavor: string | null
