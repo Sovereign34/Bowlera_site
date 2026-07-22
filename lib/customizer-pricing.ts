@@ -1,8 +1,16 @@
 // lib/customizer-pricing.ts
 // Amaç:    Customizer seçimlerinden fiyat/kalori/protein/karbonhidrat/yağ toplamını hesaplayan saf fonksiyonlar
 // Bağlı:   store/useCustomizerStore.ts (getTotals), components/customizer/SummaryPanel.tsx (Oturum 4)
-// Risk:    Burada hata olursa müşteriye yanlış fiyat/kalori gösterilir veya sepete yanlış tutar geçer
+// Risk:    Burada hata olursa müşteriye yanlış fiyat/kalori gösterilir veya sepete yanlış tutar geçer.
+//          🆕 Bitkisel Protein için variant-aware olmazsa Meksika Fasulyesi seçiliyken bile
+//          Soslu Nohut'un (fallback) kalori/proteini gösterilir — bu turda düzeltildi.
 // Dokunma: CUSTOMIZER_SPEC.md §4 (Canlı Fiyat/Kalori Hesaplama) — kural değişmeden kod değişmemeli
+//
+// DÜZELTME (bu session — Karar #11/Açık Sorun #22, v1.2): `getTotals()` içindeki main çözümlemesi
+// `findById(catalog.mains, ...)` idi — bu, `plant-based-protein` objesinin SABİT fallback
+// değerlerini (230 kcal/10g) döndürüyordu, `selections.mainVariant` hiç okunmuyordu. Artık
+// `resolveMainItem()` kullanılıyor: main.variants doluysa seçili varyanttan (yoksa variants[0]
+// fallback) okur; diğer 6 Main için davranış DEĞİŞMEDİ (variants tanımsız → mainDef'in kendisi).
 
 import type {
   CustomizerCatalog,
@@ -15,6 +23,21 @@ const findById = (items: CustomizerComponentItem[], id: string | null) =>
   id ? items.find((item) => item.id === id) ?? null : null
 
 const isItem = (item: CustomizerComponentItem | null): item is CustomizerComponentItem => item !== null
+
+// v1.2 — CUSTOMIZER_SPEC.md §4: main.variants doluysa seçili mainVariant'tan (yoksa variants[0]
+// fallback) fiyat/kalori/protein okunur. variants tanımsızsa (diğer 6 Main) mainDef'in kendi
+// alanları kullanılır — eski davranış birebir korunur.
+function resolveMainItem(
+  selections: CustomizerSelection,
+  catalog: CustomizerCatalog
+): CustomizerComponentItem | null {
+  const mainDef = catalog.mains.find((item) => item.id === selections.main) ?? null
+  if (!mainDef) return null
+  if (mainDef.variants && mainDef.variants.length > 0) {
+    return mainDef.variants.find((variant) => variant.id === selections.mainVariant) ?? mainDef.variants[0]
+  }
+  return mainDef
+}
 
 // Garden: avokado her zaman ücretli, diğerlerinden ilk 4'ü ücretsiz (CUSTOMIZER_SPEC.md §4)
 export function splitGardenPricing(selectedIds: string[], catalog: CustomizerCatalog) {
@@ -46,7 +69,7 @@ const activeExtras = (extras: CustomizerSelection["extras"], catalog: Customizer
 // ⚠️ Seçim yokken (null/[]) tüm alanlar 0 döner — NaN asla üretilmez (BSC-3 tutarlılığı)
 export function getTotals(selections: CustomizerSelection, catalog: CustomizerCatalog): CustomizerTotals {
   const base = findById(catalog.bases, selections.base)
-  const main = findById(catalog.mains, selections.main)
+  const main = resolveMainItem(selections, catalog) // 🆕 v1.2 — variant-aware (eskiden findById(catalog.mains, ...))
   const flavor = findById(catalog.signatureFlavors, selections.signatureFlavor)
   const garden = splitGardenPricing(selections.garden, catalog)
   const finish = splitFinishPricing(selections.finish, catalog)
